@@ -3,6 +3,7 @@ import { View, Text, Alert, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AuthInput } from '../components/AuthInput';
 import axios from 'axios';
+import * as SecureStore from 'expo-secure-store';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -10,22 +11,39 @@ export default function Login() {
   const router = useRouter();
 
   const handleLogin = async () => {
+    console.log('Login attempt started.');
+
+    // Check if email and password are filled
     if (!email || !password) {
+      console.log('Email or password is missing.');
       return Alert.alert('Error', 'Please fill in all fields');
     }
 
     try {
-      const response = await axios.post('http://10.81.20.135:3000/auth/login', {
+      console.log('Sending login request...');
+      const response = await axios.post('http://192.168.0.101:3000/auth/login', {
         email,
         password,
       });
+      console.log('Login request successful:', response.data);
+
+      const { accessToken, refreshToken, user } = response.data;
+
+      // Store tokens and user data in SecureStore
+      console.log('Saving tokens and user data to SecureStore...');
+      await SecureStore.setItemAsync('accessToken', accessToken);
+      await SecureStore.setItemAsync('refreshToken', refreshToken);
+      await SecureStore.setItemAsync('userData', JSON.stringify(user));
+      console.log('Data saved successfully.');
 
       Alert.alert('Login Success', 'Redirecting to dashboard...');
-      router.replace('/dashboard');
+      console.log('Redirecting to dashboard...');
+      router.replace('/');
     } catch (error: any) {
       console.log('Login error:', error);
       const errorMsg =
         error?.response?.data?.message || 'Login failed. Try again.';
+      console.log('Error message:', errorMsg);
       Alert.alert('Login Failed', errorMsg);
     }
   };
@@ -36,11 +54,7 @@ export default function Login() {
         Login
       </Text>
 
-      <AuthInput
-        label="Email"
-        value={email}
-        onChangeText={setEmail}
-      />
+      <AuthInput label="Email" value={email} onChangeText={setEmail} />
       <AuthInput
         label="Password"
         value={password}

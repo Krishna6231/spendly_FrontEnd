@@ -6,11 +6,14 @@ import {
   Dimensions,
   StyleSheet,
   Animated,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { DashboardHeader } from '@/components/DashboardHeader';
 import { PieChart } from 'react-native-chart-kit';
 import { Ionicons } from '@expo/vector-icons';
+import * as SecureStore from 'expo-secure-store';
+import axios from 'axios';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -24,9 +27,28 @@ export default function Dashboard() {
   const router = useRouter();
   const [dropdownVisible, setDropdownVisible] = useState(false);
 
-  const handleLogout = () => {
-    router.replace('/login');
+  const handleLogout = async () => {
+    try {
+      const refreshToken = await SecureStore.getItemAsync('refreshToken');
+      console.log("r",refreshToken);
+      console.log('Logging out...');
+  
+      if (refreshToken) {
+        await axios.post('http://192.168.0.101:3000/auth/logout', { refreshToken });
+      }
+  
+      await SecureStore.deleteItemAsync('authToken');
+      await SecureStore.deleteItemAsync('refreshToken');
+      await SecureStore.deleteItemAsync('userData');
+  
+      console.log('All auth data deleted. Redirecting to login...');
+      router.replace('/login');
+    } catch (error) {
+      console.error('Error during logout:', error);
+      Alert.alert('Logout Error', 'Something went wrong while logging out.');
+    }
   };
+  
 
   return (
     <View style={styles.container}>
