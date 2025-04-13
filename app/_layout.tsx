@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Stack, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, View, StyleSheet } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import axios from 'axios';
 
 // Decode JWT manually
@@ -31,11 +32,9 @@ export default function Layout() {
         const user = await SecureStore.getItemAsync('userData');
 
         if (accessToken && user) {
-          // Check if token is expired → if yes, try refresh
-          const expired = isTokenExpired(accessToken); // Check if the token has expired
+          const expired = isTokenExpired(accessToken);
           
           if (expired && refreshToken) {
-            // If expired and refreshToken exists, refresh the access token
             const refreshResponse = await axios.post(
               'http://192.168.0.101:3000/auth/refresh-token',
               { refreshToken }
@@ -74,22 +73,32 @@ export default function Layout() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={styles.centered}>
         <ActivityIndicator size="large" />
       </View>
     );
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      {!isLoggedIn ? (
-        <>
-          <Stack.Screen name="login" />
-          <Stack.Screen name="signup" />
-        </>
-      ) : (
-        <Stack.Screen name="index" />
-      )}
-    </Stack>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Stack screenOptions={{ headerShown: false }}>
+        {!isLoggedIn ? (
+          <>
+            <Stack.Screen name="login" />
+            <Stack.Screen name="signup" />
+          </>
+        ) : (
+          <Stack.Screen name="index" />
+        )}
+      </Stack>
+    </GestureHandlerRootView>
   );
 }
+
+const styles = StyleSheet.create({
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
