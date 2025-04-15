@@ -4,6 +4,8 @@ import * as SecureStore from 'expo-secure-store';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import axios from 'axios';
+import { Provider } from 'react-redux';
+import { store } from '../redux/store'; // Adjust path if needed
 
 // Decode JWT manually
 const decodeJwt = (token: string) => {
@@ -80,6 +82,7 @@ export default function Layout() {
   }
 
   return (
+    <Provider store={store}>
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Stack screenOptions={{ headerShown: false }}>
         {!isLoggedIn ? (
@@ -92,6 +95,7 @@ export default function Layout() {
         )}
       </Stack>
     </GestureHandlerRootView>
+    </Provider>
   );
 }
 

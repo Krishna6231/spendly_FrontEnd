@@ -11,6 +11,7 @@ import { AuthInput } from "../components/AuthInput";
 import axios from "axios";
 
 export default function Signup() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -18,7 +19,7 @@ export default function Signup() {
   const router = useRouter();
 
   const handleSignup = async () => {
-    if (!email || !password || !confirm) {
+    if (!name || !email || !password || !confirm) {
       return Alert.alert("Error", "Please fill all fields");
     }
     if (password !== confirm) {
@@ -28,6 +29,7 @@ export default function Signup() {
     try {
       setLoading(true);
       const response = await axios.post("http://192.168.0.101:3000/auth/signup", {
+        name,
         email,
         password,
       });
@@ -49,6 +51,7 @@ export default function Signup() {
         Sign Up
       </Text>
 
+      <AuthInput label="Name" value={name} onChangeText={setName} />
       <AuthInput label="Email" value={email} onChangeText={setEmail} />
       <AuthInput
         label="Password"

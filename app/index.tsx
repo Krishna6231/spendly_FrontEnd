@@ -1,22 +1,31 @@
 import { useEffect, useRef, useState } from "react";
-import { View, Text, TouchableOpacity, Dimensions, StyleSheet, Alert, TextInput} from "react-native";
+import { View, Text, TouchableOpacity, Dimensions, Alert, TextInput } from "react-native";
 import { useRouter } from "expo-router";
+import { AppDispatch } from "@/redux/store";
 import { ScrollView } from "react-native-gesture-handler";
-import { DashboardHeader } from "@/components/DashboardHeader";
 import { PieChart } from "react-native-chart-kit";
 import DropDownPicker from "react-native-dropdown-picker";
 import { Ionicons } from "@expo/vector-icons";
 import * as SecureStore from "expo-secure-store";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 import axios from "axios";
 import { Modalize } from "react-native-modalize";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import styles from "@/styles/index.styles";
+import { useDispatch } from "react-redux";
+import {
+  addExpenseAsync,
+  fetchExpensesAsync,
+} from "../redux/slices/expenseSlice";
+
+const CATEGORY_COLORS = [
+  "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF",
+  "#FF9F40", "#8D6E63", "#00ACC1", "#D4E157", "#F06292",
+  "#BA68C8", "#4DB6AC", "#FFD54F", "#7986CB", "#AED581"
+];
 
 const screenWidth = Dimensions.get("window").width;
-const expenseData = [
-  { name: "Food", amount: 1500, color: "#4caf50" },
-  { name: "Travel", amount: 1000, color: "#ff9800" },
-  { name: "Shopping", amount: 800, color: "#f44336" },
-];
 
 export default function Dashboard() {
   const router = useRouter();
@@ -28,34 +37,71 @@ export default function Dashboard() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [access_token, setAccessToken] = useState<any>(null);
+  const dispatch = useDispatch<AppDispatch>();
+  const expenses = useSelector((state: RootState) => state.expenses.expenses);
+  const categories = useSelector((state: RootState) => state.expenses.categories);
 
   useEffect(() => {
-    const getUserData = async () => {
+    const getUserDataAndExpenses = async () => {
       const userString = await SecureStore.getItemAsync("userData");
       const token = await SecureStore.getItemAsync("accessToken");
 
       if (userString) {
         const parsedUser = JSON.parse(userString);
         setUser(parsedUser);
+        dispatch(fetchExpensesAsync(parsedUser.id));
       }
 
       if (token) {
         setAccessToken(token);
       }
     };
-    getUserData();
+    getUserDataAndExpenses();
   }, []);
 
+  useEffect(() => {
+    const formatted = categories.map((cat) => ({
+      label: cat,
+      value: cat,
+    }));
+    setItems(formatted);
+  }, [categories]);
+
   const [open, setOpen] = useState(false);
-  const [items, setItems] = useState([
-    { label: "Food", value: "Food" },
-    { label: "Travel", value: "Travel" },
-    { label: "Shopping", value: "Shopping" },
-    { label: "Medicine", value: "Medicine" },
-    { label: "Drinks", value: "Drinks" },
-    { label: "Entertainment", value: "Entertainment" },
-    { label: "Other", value: "Other" },
-  ]);
+  const [items, setItems] = useState<{ label: string; value: string }[]>([]);
+
+  const categoryMap: Record<string, { amount: number; color: string }> = {};
+  const categoryColorMap: Record<string, string> = {};
+  let colorIndex = 0;
+
+
+  expenses.forEach((expense) => {
+    const { category, amount } = expense;
+
+    if (!categoryColorMap[category]) {
+      categoryColorMap[category] = CATEGORY_COLORS[colorIndex % CATEGORY_COLORS.length];
+      colorIndex++;
+    }
+
+    if (categoryMap[category]) {
+      categoryMap[category].amount += amount;
+    } else {
+      categoryMap[category] = {
+        amount,
+        color: categoryColorMap[category],
+      };
+    }
+  });
+
+  const expenseData = Object.entries(categoryMap).map(
+    ([category, data]) => ({
+      name: category,
+      amount: data.amount,
+      color: data.color,
+    })
+  );
+
+  const totalSpent = expenseData.reduce((acc, item) => acc + item.amount, 0);
 
   const openAddExpenseModal = () => modalRef.current?.open();
   const closeAddExpenseModal = () => modalRef.current?.close();
@@ -65,45 +111,35 @@ export default function Dashboard() {
   const handleAddExpense = async () => {
     if (!category || !amount || !date) {
       Alert.alert("Error", "Please fill all fields.");
-      console.log("Missing field:", { category, amount, date });
       return;
     }
-  
+
     try {
       const formattedDate = date.toISOString().split("T")[0];
       const expensePayload = {
-          category,
-          date: formattedDate,
-          amount: parseFloat(amount),
-          id: user?.id,
+        category,
+        date: formattedDate,
+        amount: parseFloat(amount),
+        id: user?.id,
       };
-  
-      const response = await axios.post(
-        "http://192.168.0.101:3000/expense/add",
-        expensePayload,
-        {
-          headers: {
-            Authorization: `Bearer ${access_token}`,
-          },
-        }
-      );
-  
-      if (response.status === 200 || response.status === 201) {
-        Alert.alert("Success", "Expense is added!");
+
+      const result = await dispatch(addExpenseAsync(expensePayload));
+
+      if (addExpenseAsync.fulfilled.match(result)) {
+        Alert.alert("Success", "Expense is added!!");
         closeAddExpenseModal();
         setCategory("");
         setAmount("");
         setDate(new Date());
       } else {
-        console.warn("Unexpected response status:", response.status);
-        Alert.alert("Error", "Failed to add expense. Please try again.");
+        Alert.alert("Error", "Failed to add expense");
       }
     } catch (error) {
       console.error("Add expense error:", error);
       Alert.alert("Error", "Something went wrong. Please try again.");
     }
   };
-  
+
   const handleLogout = async () => {
     try {
       const refreshToken = await SecureStore.getItemAsync("refreshToken");
@@ -158,7 +194,14 @@ export default function Dashboard() {
 
       {/* Pie Chart */}
       <View style={{ alignItems: "center", marginTop: 20 }}>
-        <DashboardHeader />
+        <View style={{ marginBottom: 16 }}>
+          <Text style={{ fontSize: 22, fontWeight: "bold" }}>
+            Welcome, {user?.name ? user.name : "User"}
+          </Text>
+          <Text style={{ fontSize: 16, marginTop: 4 }}>
+            Total Spent: ₹{totalSpent}
+          </Text>
+        </View>
         <PieChart
           data={expenseData.map((item) => ({
             name: item.name,
@@ -198,6 +241,10 @@ export default function Dashboard() {
         <Ionicons name="add" size={28} color="#fff" />
       </TouchableOpacity>
 
+      <TouchableOpacity style={styles.fab2} onPress={() => router.push('/category')}>
+        <Ionicons name="add" size={28} color="#fff" />
+      </TouchableOpacity>
+
       {/* Bottom Sheet Modal */}
       <Modalize
         ref={modalRef}
@@ -220,7 +267,7 @@ export default function Dashboard() {
                 setOpen={setOpen}
                 setValue={setCategory}
                 setItems={setItems}
-                flatListProps={{nestedScrollEnabled:true}}
+                flatListProps={{ nestedScrollEnabled: true }}
                 placeholder="Select a category"
                 style={{
                   borderColor: "#ccc",
@@ -263,6 +310,7 @@ export default function Dashboard() {
                   setDate(currentDate);
                   setShowDatePicker(false); // Hide the date picker after selection
                 }}
+                maximumDate={new Date()}
               />
             )}
 
@@ -290,150 +338,3 @@ export default function Dashboard() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#fdfdfd" },
-
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-
-  title: {
-    fontSize: 22,
-    fontWeight: "600",
-    color: "#333",
-  },
-
-  dropdown: {
-    position: "absolute",
-    top: 50,
-    right: 0,
-    backgroundColor: "#fff",
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 5,
-    zIndex: 10,
-  },
-
-  dropdownItem: {
-    paddingVertical: 8,
-  },
-
-  dropdownText: {
-    fontSize: 16,
-    color: "#333",
-  },
-
-  divider: {
-    height: 1,
-    backgroundColor: "#ccc",
-    marginVertical: 8,
-  },
-
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 12,
-    color: "#444",
-  },
-
-  categoryCard: {
-    backgroundColor: "#fff",
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 30,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-  },
-
-  categoryRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 6,
-  },
-
-  colorDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    marginRight: 10,
-  },
-
-  categoryName: {
-    fontSize: 16,
-    flex: 1,
-  },
-
-  categoryAmount: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#333",
-  },
-
-  fab: {
-    position: "absolute",
-    bottom: 30,
-    right: 20,
-    backgroundColor: "#007bff",
-    borderRadius: 30,
-    width: 60,
-    height: 60,
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-  },
-
-  inputLabel: {
-    fontSize: 16,
-    marginTop: 12,
-    fontWeight: "600",
-    color: "#444",
-  },
-
-  dropdownWrapper: {
-    borderBottomWidth: 1,
-    borderColor: "#ccc",
-    marginBottom: 12,
-    overflow: "scroll",
-  },
-
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    height: 50,
-    paddingHorizontal: 10,
-    marginBottom: 12,
-  },
-
-  dateInputWrapper: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    height: 50,
-    justifyContent: "center",
-    paddingHorizontal: 10,
-  },
-
-  dateInput: {
-    fontSize: 16,
-    color: "#444",
-  },
-
-  addBtn: {
-    marginTop: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-});
