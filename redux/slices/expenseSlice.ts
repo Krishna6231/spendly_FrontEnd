@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import axios from 'axios';
 import * as SecureStore from "expo-secure-store";
 
@@ -24,6 +24,54 @@ const initialState: ExpenseState = {
   categories: [],
 };
 
+// Add Category
+export const addCategoryAsync = createAsyncThunk(
+  'expenses/addCategory',
+  async (categoryPayload: { user_id: string; category: string; limit: number }, { rejectWithValue }) => {
+    const access_token = await SecureStore.getItemAsync("accessToken");
+    try {
+      const response = await axios.post(
+        'http://192.168.1.6:3000/expense/add-category',
+        categoryPayload,
+        {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        }
+      );
+      return response.data; // the created category object
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+// Edit Category
+export const editCategoryAsync = createAsyncThunk(
+  'expenses/editCategory',
+  async (
+    payload: { user_id: string; category: string; limit: number },
+    { rejectWithValue }
+  ) => {
+    const access_token = await SecureStore.getItemAsync("accessToken");
+    try {
+      const response = await axios.put(
+        'http://192.168.1.6:3000/expense/edit-category',
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        }
+      );
+      return response.data; // Should return updated category
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+
 // Fetch expenses and categories
 export const fetchExpensesAsync = createAsyncThunk(
   'expenses/fetchExpenses',
@@ -31,7 +79,7 @@ export const fetchExpensesAsync = createAsyncThunk(
     const access_token = await SecureStore.getItemAsync("accessToken");
     try {
       const response = await axios.get(
-        `http://10.142.20.242:3000/expense/user?userid=${userId}`,
+        `http://192.168.1.6:3000/expense/user?userid=${userId}`,
         {
           headers: {
             Authorization: `Bearer ${access_token}`,
@@ -52,7 +100,7 @@ export const addExpenseAsync = createAsyncThunk(
     const access_token = await SecureStore.getItemAsync("accessToken");
     try {
       const response = await axios.post(
-        'http://10.142.20.242:3000/expense/add',
+        'http://192.168.1.6:3000/expense/add',
         expensePayload,
         {
           headers: {
@@ -89,7 +137,25 @@ const expenseSlice = createSlice({
       })
       .addCase(fetchExpensesAsync.rejected, (state, action) => {
         console.error('Failed to fetch expenses:', action.payload);
+      })
+      .addCase(addCategoryAsync.fulfilled, (state, action) => {
+        state.categories.push(action.payload);
+      })
+      .addCase(addCategoryAsync.rejected, (state, action) => {
+        console.error("Failed to add category:", action.payload);
+      })
+      .addCase(editCategoryAsync.fulfilled, (state, action) => {
+        const updated = action.payload;
+        const index = state.categories.findIndex(cat => cat.category === updated.category);
+        if (index !== -1) {
+          state.categories[index].limit = updated.limit;
+        }
+      })
+      .addCase(editCategoryAsync.rejected, (state, action) => {
+        console.error("Failed to edit category:", action.payload);
       });
+      
+      
   },
 });
 
