@@ -18,7 +18,7 @@ import {
   addExpenseAsync,
   fetchExpensesAsync,
 } from "../redux/slices/expenseSlice";
-
+import Fab from '../components/Fab'; // Use PascalCase for React components
 const CATEGORY_COLORS = [
   "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF",
   "#FF9F40", "#8D6E63", "#00ACC1", "#D4E157", "#F06292",
@@ -40,7 +40,7 @@ export default function Dashboard() {
   const dispatch = useDispatch<AppDispatch>();
   const expenses = useSelector((state: RootState) => state.expenses.expenses);
   const categories = useSelector((state: RootState) => state.expenses.categories);
-
+  
   useEffect(() => {
     const getUserDataAndExpenses = async () => {
       const userString = await SecureStore.getItemAsync("userData");
@@ -61,11 +61,12 @@ export default function Dashboard() {
 
   useEffect(() => {
     const formatted = categories.map((cat) => ({
-      label: cat,
-      value: cat,
+      label: cat.category,
+      value: cat.category,
     }));
     setItems(formatted);
   }, [categories]);
+  
 
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<{ label: string; value: string }[]>([]);
@@ -145,7 +146,7 @@ export default function Dashboard() {
       const refreshToken = await SecureStore.getItemAsync("refreshToken");
 
       if (refreshToken) {
-        await axios.post("http://192.168.0.101:3000/auth/logout", {
+        await axios.post("http://10.142.20.242:3000/auth/logout", {
           refreshToken,
         });
       }
@@ -172,10 +173,10 @@ export default function Dashboard() {
 
         {dropdownVisible && (
           <View style={styles.dropdown}>
-            <TouchableOpacity onPress={() => {}} style={styles.dropdownItem}>
+            <TouchableOpacity onPress={() => { }} style={styles.dropdownItem}>
               <Text style={styles.dropdownText}>Profile</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {}} style={styles.dropdownItem}>
+            <TouchableOpacity onPress={() => { }} style={styles.dropdownItem}>
               <Text style={styles.dropdownText}>Settings</Text>
             </TouchableOpacity>
 
@@ -237,13 +238,19 @@ export default function Dashboard() {
       </View>
 
       {/* Add Expense Button */}
-      <TouchableOpacity style={styles.fab} onPress={openAddExpenseModal}>
+      <Fab
+        onAddExpense={openAddExpenseModal}
+        onAddCategory={() => router.push("/category")}
+        goToSettings={() => router.push("/settings")}
+      />
+
+      {/* <TouchableOpacity style={styles.fab} onPress={openAddExpenseModal}>
         <Ionicons name="add" size={28} color="#fff" />
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.fab2} onPress={() => router.push('/category')}>
         <Ionicons name="add" size={28} color="#fff" />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       {/* Bottom Sheet Modal */}
       <Modalize

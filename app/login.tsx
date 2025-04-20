@@ -4,7 +4,9 @@ import { useRouter } from 'expo-router';
 import { AuthInput } from '../components/AuthInput';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import Constants from 'expo-constants';
 
+const API_URL = Constants.expoConfig?.extra?.API_URL;
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,27 +19,29 @@ export default function Login() {
       console.log('Email or password is missing.');
       return Alert.alert('Error', 'Please fill in all fields');
     }
-
-    try {
-      const response = await axios.post('http://192.168.0.101:3000/auth/login', {
-        email,
-        password,
-      });
-
-      const { accessToken, refreshToken, user } = response.data;
-
-      // Store tokens and user data in SecureStore
-      await SecureStore.setItemAsync('accessToken', accessToken);
-      await SecureStore.setItemAsync('refreshToken', refreshToken);
-      await SecureStore.setItemAsync('userData', JSON.stringify(user));
-
-      Alert.alert('Login Success', 'Redirecting to dashboard...');
-      router.replace('/');
-    } catch (error: any) {
-      const errorMsg =
-        error?.response?.data?.message || 'Login failed. Try again.';
-      Alert.alert('Login Failed', errorMsg);
-    }
+    
+      try {
+        const response = await axios.post('http://10.142.20.242:3000/auth/login', {
+          email,
+          password,
+        });
+  
+        const { accessToken, refreshToken, user } = response.data;
+  
+        // Store tokens and user data in SecureStore
+        await SecureStore.setItemAsync('accessToken', accessToken);
+        await SecureStore.setItemAsync('refreshToken', refreshToken);
+        await SecureStore.setItemAsync('userData', JSON.stringify(user));
+  
+        Alert.alert('Login Success', 'Redirecting to dashboard...');
+        router.replace('/');
+      } catch (error: any) {
+        const errorMsg =
+          error?.response?.data?.message || 'Login failed. Try again.';
+        Alert.alert('Login Failed', errorMsg);
+      }
+    
+    
   };
 
   return (

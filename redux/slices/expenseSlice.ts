@@ -8,11 +8,16 @@ type Expense = {
   amount: number;
   date: string;
 };
+type CategoryItem = {
+  category: string;
+  limit: number;
+};
 
 interface ExpenseState {
   expenses: Expense[];
-  categories: string[];
+  categories: CategoryItem[];
 }
+
 
 const initialState: ExpenseState = {
   expenses: [],
@@ -26,7 +31,7 @@ export const fetchExpensesAsync = createAsyncThunk(
     const access_token = await SecureStore.getItemAsync("accessToken");
     try {
       const response = await axios.get(
-        `http://192.168.0.101:3000/expense/user?userid=${userId}`,
+        `http://10.142.20.242:3000/expense/user?userid=${userId}`,
         {
           headers: {
             Authorization: `Bearer ${access_token}`,
@@ -47,7 +52,7 @@ export const addExpenseAsync = createAsyncThunk(
     const access_token = await SecureStore.getItemAsync("accessToken");
     try {
       const response = await axios.post(
-        'http://192.168.0.101:3000/expense/add',
+        'http://10.142.20.242:3000/expense/add',
         expensePayload,
         {
           headers: {

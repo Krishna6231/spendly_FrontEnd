@@ -1,10 +1,10 @@
 // app/add-expense.tsx
 import { View, Text } from 'react-native';
 
-export default function AddExpense() {
+export default function Settings() {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>This is Add Expense Screen</Text>
+      <Text>This is Settings Screen</Text>
     </View>
   );
 }
