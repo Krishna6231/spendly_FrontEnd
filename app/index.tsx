@@ -1,8 +1,16 @@
 import { useEffect, useRef, useState } from "react";
-import { View, Text, TouchableOpacity, Dimensions, Alert, TextInput } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Dimensions,
+  Alert,
+  TextInput,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { AppDispatch } from "@/redux/store";
-import { ScrollView } from "react-native-gesture-handler";
+import { Pressable, ScrollView } from "react-native-gesture-handler";
+import { useNavigation } from "@react-navigation/native";
 import { PieChart } from "react-native-chart-kit";
 import DropDownPicker from "react-native-dropdown-picker";
 import { Ionicons } from "@expo/vector-icons";
@@ -13,16 +21,29 @@ import axios from "axios";
 import { Modalize } from "react-native-modalize";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import styles from "@/styles/index.styles";
+import { Animated } from "react-native";
 import { useDispatch } from "react-redux";
 import {
   addExpenseAsync,
   fetchExpensesAsync,
 } from "../redux/slices/expenseSlice";
-import Fab from '../components/Fab'; // Use PascalCase for React components
+import Fab from "../components/Fab";
 const CATEGORY_COLORS = [
-  "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF",
-  "#FF9F40", "#8D6E63", "#00ACC1", "#D4E157", "#F06292",
-  "#BA68C8", "#4DB6AC", "#FFD54F", "#7986CB", "#AED581"
+  "#FF6384",
+  "#36A2EB",
+  "#FFCE56",
+  "#4BC0C0",
+  "#9966FF",
+  "#FF9F40",
+  "#8D6E63",
+  "#00ACC1",
+  "#D4E157",
+  "#F06292",
+  "#BA68C8",
+  "#4DB6AC",
+  "#FFD54F",
+  "#7986CB",
+  "#AED581",
 ];
 
 const screenWidth = Dimensions.get("window").width;
@@ -39,8 +60,12 @@ export default function Dashboard() {
   const [access_token, setAccessToken] = useState<any>(null);
   const dispatch = useDispatch<AppDispatch>();
   const expenses = useSelector((state: RootState) => state.expenses.expenses);
-  const categories = useSelector((state: RootState) => state.expenses.categories);
-  
+  const categories = useSelector(
+    (state: RootState) => state.expenses.categories
+  );
+  const blinkingBorder = useRef(new Animated.Value(0)).current;
+  const navigation = useNavigation();
+
   useEffect(() => {
     const getUserDataAndExpenses = async () => {
       const userString = await SecureStore.getItemAsync("userData");
@@ -60,13 +85,29 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(blinkingBorder, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: false,
+        }),
+        Animated.timing(blinkingBorder, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: false,
+        }),
+      ])
+    ).start();
+  }, []);
+
+  useEffect(() => {
     const formatted = categories.map((cat) => ({
       label: cat.category,
       value: cat.category,
     }));
     setItems(formatted);
   }, [categories]);
-  
 
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<{ label: string; value: string }[]>([]);
@@ -75,12 +116,17 @@ export default function Dashboard() {
   const categoryColorMap: Record<string, string> = {};
   let colorIndex = 0;
 
+  const categoryLimitMap = categories.reduce((acc, item) => {
+    acc[item.category] = item.limit;
+    return acc;
+  }, {} as Record<string, number>);
 
   expenses.forEach((expense) => {
     const { category, amount } = expense;
 
     if (!categoryColorMap[category]) {
-      categoryColorMap[category] = CATEGORY_COLORS[colorIndex % CATEGORY_COLORS.length];
+      categoryColorMap[category] =
+        CATEGORY_COLORS[colorIndex % CATEGORY_COLORS.length];
       colorIndex++;
     }
 
@@ -94,13 +140,11 @@ export default function Dashboard() {
     }
   });
 
-  const expenseData = Object.entries(categoryMap).map(
-    ([category, data]) => ({
-      name: category,
-      amount: data.amount,
-      color: data.color,
-    })
-  );
+  const expenseData = Object.entries(categoryMap).map(([category, data]) => ({
+    name: category,
+    amount: data.amount,
+    color: data.color,
+  }));
 
   const totalSpent = expenseData.reduce((acc, item) => acc + item.amount, 0);
 
@@ -146,7 +190,7 @@ export default function Dashboard() {
       const refreshToken = await SecureStore.getItemAsync("refreshToken");
 
       if (refreshToken) {
-        await axios.post("http://192.168.1.6:3000/auth/logout", {
+        await axios.post("http://192.168.0.101:3000/auth/logout", {
           refreshToken,
         });
       }
@@ -173,10 +217,10 @@ export default function Dashboard() {
 
         {dropdownVisible && (
           <View style={styles.dropdown}>
-            <TouchableOpacity onPress={() => { }} style={styles.dropdownItem}>
+            <TouchableOpacity onPress={() => {}} style={styles.dropdownItem}>
               <Text style={styles.dropdownText}>Profile</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => { }} style={styles.dropdownItem}>
+            <TouchableOpacity onPress={() => {}} style={styles.dropdownItem}>
               <Text style={styles.dropdownText}>Settings</Text>
             </TouchableOpacity>
 
@@ -228,14 +272,115 @@ export default function Dashboard() {
       {/* Categories */}
       <View style={styles.categoryCard}>
         <Text style={styles.sectionTitle}>Spending Categories</Text>
-        {expenseData.map((item, index) => (
-          <View key={index} style={styles.categoryRow}>
-            <View style={[styles.colorDot, { backgroundColor: item.color }]} />
-            <Text style={styles.categoryName}>{item.name}</Text>
-            <Text style={styles.categoryAmount}>₹{item.amount}</Text>
-          </View>
-        ))}
+
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 12 }}
+          style={{ marginTop: 8 }}
+        >
+          {expenseData
+            .map((item) => {
+              const limit = categoryLimitMap[item.name] || 0;
+              const percentage = limit > 0 ? (item.amount / limit) * 100 : 0;
+              return { ...item, percentage };
+            })
+            .sort((a, b) => b.percentage - a.percentage)
+            .map((item, index) => {
+              const limit = categoryLimitMap[item.name] || 0;
+              const isOverspent = item.amount > limit;
+              const percentage = limit > 0 ? (item.amount / limit) * 100 : 0;
+
+              let barColor = "#4CAF50"; // green by default
+              if (isOverspent) barColor = "#B71C1C";
+              else if (percentage >= 90) barColor = "#F44336"; // red
+              else if (percentage >= 70) barColor = "#FF9800"; // orange
+              else if (percentage >= 40) barColor = "#FFEB3B"; // yellow
+
+              const borderColor = blinkingBorder.interpolate({
+                inputRange: [0, 1],
+                outputRange: ["#ccc", barColor],
+              });
+
+              return (
+                <Pressable
+                  key={index}
+                  onPress={() =>
+                    router.push({
+                      pathname: `/expenses/[name]`,
+                      params: { name: item.name },
+                    })
+                  }
+                >
+                  <Animated.View
+                    key={index}
+                    style={[
+                      {
+                        borderWidth: 1.5,
+                        borderRadius: 10,
+                        padding: 10,
+                        marginVertical: 8,
+                        borderColor: percentage >= 70 ? borderColor : "#ccc",
+                        shadowColor: barColor,
+                        shadowOffset: { width: 0, height: 0 },
+                        shadowOpacity: blinkingBorder,
+                        shadowRadius: blinkingBorder.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0, 10],
+                        }),
+                        backgroundColor: "#fff",
+                        elevation:
+                          percentage >= 70
+                            ? blinkingBorder.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [0, 10],
+                              })
+                            : 0,
+                      },
+                    ]}
+                  >
+                    {/* Top Row */}
+                    <View style={styles.cat_top_row}>
+                      <View>
+                        <Text style={{ fontSize: 16, fontWeight: "600" }}>
+                          {item.name}
+                        </Text>
+                      </View>
+                      <Text style={{ fontSize: 16 }}>₹{item.amount}</Text>
+                    </View>
+
+                    {/* Progress Bar */}
+                    <View style={styles.progressBarOut}>
+                      <View
+                        style={{
+                          width: `${Math.min(percentage, 100)}%`,
+                          backgroundColor: barColor,
+                          height: "100%",
+                          borderRadius: 5,
+                        }}
+                      />
+                    </View>
+                    {isOverspent ? (
+                      <Text
+                        style={{ marginTop: 4, fontSize: 12, color: "#B71C1C" }}
+                      >
+                        Whoa! You overspent 🚨
+                      </Text>
+                    ) : (
+                      <Text
+                        style={{ marginTop: 4, fontSize: 12, color: "#666" }}
+                      >
+                        Limit: ₹{limit} ({Math.floor(percentage)}%)
+                      </Text>
+                    )}
+                  </Animated.View>
+                </Pressable>
+              );
+            })}
+        </ScrollView>
       </View>
+      <TouchableOpacity onPress={() => router.push("/history")}>
+        <Text style={styles.history}>History</Text>
+      </TouchableOpacity>
 
       {/* Add Expense Button */}
       <Fab
@@ -243,14 +388,6 @@ export default function Dashboard() {
         onAddCategory={() => router.push("/category")}
         goToSettings={() => router.push("/settings")}
       />
-
-      {/* <TouchableOpacity style={styles.fab} onPress={openAddExpenseModal}>
-        <Ionicons name="add" size={28} color="#fff" />
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.fab2} onPress={() => router.push('/category')}>
-        <Ionicons name="add" size={28} color="#fff" />
-      </TouchableOpacity> */}
 
       {/* Bottom Sheet Modal */}
       <Modalize
@@ -282,7 +419,7 @@ export default function Dashboard() {
                 }}
                 dropDownContainerStyle={{
                   borderColor: "#ccc",
-                  maxHeight: 200, // 🔥 FIXED HEIGHT
+                  maxHeight: 200,
                 }}
                 listMode="SCROLLVIEW"
                 scrollViewProps={{
@@ -301,7 +438,7 @@ export default function Dashboard() {
 
             <Text style={styles.inputLabel}>Date</Text>
             <TouchableOpacity
-              onPress={() => setShowDatePicker(true)} // Show date picker on click
+              onPress={() => setShowDatePicker(true)}
               style={styles.dateInputWrapper}
             >
               <Text style={styles.dateInput}>{date.toLocaleDateString()}</Text>
@@ -315,7 +452,7 @@ export default function Dashboard() {
                 onChange={(event, selectedDate) => {
                   const currentDate = selectedDate || date;
                   setDate(currentDate);
-                  setShowDatePicker(false); // Hide the date picker after selection
+                  setShowDatePicker(false);
                 }}
                 maximumDate={new Date()}
               />

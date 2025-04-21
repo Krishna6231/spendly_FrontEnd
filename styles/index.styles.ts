@@ -23,7 +23,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 5,
   },
-  
 
   title: {
     fontSize: 22,
@@ -73,6 +72,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginTop: 30,
+    height: 400,
     elevation: 2,
     shadowColor: "#000",
     shadowOpacity: 0.05,
@@ -83,13 +83,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginVertical: 6,
-  },
-
-  colorDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    marginRight: 10,
   },
 
   categoryName: {
@@ -177,5 +170,24 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 8,
   },
+
+  progressBarOut: {
+    height: 8,
+    backgroundColor: "#eee",
+    borderRadius: 5,
+    marginTop: 10,
+    overflow: "hidden",
+  },
+
+  cat_top_row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  history: {
+    padding: 7,
+    textDecorationLine: "underline",
+  }
 });
 export default styles;

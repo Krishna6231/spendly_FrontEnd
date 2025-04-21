@@ -31,7 +31,7 @@ export const addCategoryAsync = createAsyncThunk(
     const access_token = await SecureStore.getItemAsync("accessToken");
     try {
       const response = await axios.post(
-        'http://192.168.1.6:3000/expense/add-category',
+        'http://192.168.0.101:3000/expense/add-category',
         categoryPayload,
         {
           headers: {
@@ -56,7 +56,7 @@ export const editCategoryAsync = createAsyncThunk(
     const access_token = await SecureStore.getItemAsync("accessToken");
     try {
       const response = await axios.put(
-        'http://192.168.1.6:3000/expense/edit-category',
+        'http://192.168.0.101:3000/expense/edit-category',
         payload,
         {
           headers: {
@@ -79,7 +79,7 @@ export const fetchExpensesAsync = createAsyncThunk(
     const access_token = await SecureStore.getItemAsync("accessToken");
     try {
       const response = await axios.get(
-        `http://192.168.1.6:3000/expense/user?userid=${userId}`,
+        `http://192.168.0.101:3000/expense/user?userid=${userId}`,
         {
           headers: {
             Authorization: `Bearer ${access_token}`,
@@ -100,7 +100,7 @@ export const addExpenseAsync = createAsyncThunk(
     const access_token = await SecureStore.getItemAsync("accessToken");
     try {
       const response = await axios.post(
-        'http://192.168.1.6:3000/expense/add',
+        'http://192.168.0.101:3000/expense/add',
         expensePayload,
         {
           headers: {
@@ -109,6 +109,29 @@ export const addExpenseAsync = createAsyncThunk(
         }
       );
       return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const deleteExpenseAsync = createAsyncThunk(
+  'expenses/deleteExpense',
+  async (
+    payload: { expenseId: string; userId: string },
+    { rejectWithValue }
+  ) => {
+    const access_token = await SecureStore.getItemAsync("accessToken");
+    try {
+      await axios.delete(
+        `http://192.168.0.101:3000/expense/delete?expenseId=${payload.expenseId}&userId=${payload.userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        }
+      );
+      return payload.expenseId; // We'll use this to remove from local state
     } catch (error: any) {
       return rejectWithValue(error.response?.data || error.message);
     }
@@ -153,8 +176,13 @@ const expenseSlice = createSlice({
       })
       .addCase(editCategoryAsync.rejected, (state, action) => {
         console.error("Failed to edit category:", action.payload);
+      })
+      .addCase(deleteExpenseAsync.fulfilled, (state, action) => {
+        state.expenses = state.expenses.filter(exp => exp.id !== action.payload);
+      })
+      .addCase(deleteExpenseAsync.rejected, (state, action) => {
+        console.error("Failed to delete expense:", action.payload);
       });
-      
       
   },
 });

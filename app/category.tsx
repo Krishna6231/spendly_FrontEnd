@@ -6,6 +6,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 import styles from "../styles/category.styles";
 import * as SecureStore from "expo-secure-store";
 import { addCategoryAsync, fetchExpensesAsync, editCategoryAsync } from "../redux/slices/expenseSlice";
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from "expo-router";
 
 interface CategoryItem {
   category: string;
@@ -20,6 +22,7 @@ const Category = () => {
   const [limitInput, setLimitInput] = useState("");
   const [user, setUser] = useState<any>(null);
   const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
 
   useEffect(() => {
     const getUserDataAndExpenses = async () => {
@@ -89,7 +92,10 @@ const Category = () => {
 
   return (
     <View style={{ flex: 1, padding: 16 }}>
-      <Text style={styles.heading}>Your Categories</Text>
+      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <Ionicons name="arrow-back" size={24} color="black" />
+      </TouchableOpacity>
+      <Text style={styles.title}>Your Categories</Text>
 
       <FlatList
         data={categoryList}

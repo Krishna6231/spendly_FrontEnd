@@ -1,11 +1,20 @@
 import { StyleSheet } from "react-native";
 
 export default StyleSheet.create({
-  heading: {
-    fontSize: 22,
+  backButton: {
+    position: "absolute",
+    top: 16,
+    left: 16,
+    zIndex: 1, // Ensure the button stays on top
+    padding: 8,
+  },
+  title: {
+    fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 16,
+    marginTop: 5,
+    marginBottom: 15,
     color: "#333",
+    textAlign: "center",
   },
   card: {
     flexDirection: "row",
