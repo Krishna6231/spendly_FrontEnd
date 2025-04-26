@@ -6,13 +6,14 @@ import {
   Dimensions,
   Alert,
   TextInput,
+  LogBox,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { AppDispatch } from "@/redux/store";
 import { Pressable, ScrollView } from "react-native-gesture-handler";
 import { useNavigation } from "@react-navigation/native";
 import { PieChart } from "react-native-chart-kit";
-import DropDownPicker from "react-native-dropdown-picker";
+import CustomDropdown from "@/components/CustomDropdown";
 import { Ionicons } from "@expo/vector-icons";
 import * as SecureStore from "expo-secure-store";
 import { useSelector } from "react-redux";
@@ -45,6 +46,10 @@ const CATEGORY_COLORS = [
   "#7986CB",
   "#AED581",
 ];
+
+LogBox.ignoreLogs([
+  "VirtualizedLists should never be nested inside plain ScrollViews",
+]);
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -396,88 +401,72 @@ export default function Dashboard() {
         handleStyle={{ backgroundColor: "#ccc" }}
         scrollViewProps={{
           nestedScrollEnabled: true,
+          keyboardShouldPersistTaps: "handled",
+          scrollEnabled: true,
         }}
       >
-        <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled>
-          <View style={{ padding: 20 }}>
-            <Text style={styles.sectionTitle}>Add Expense</Text>
+        <View style={{ padding: 20 }}>
+          <Text style={styles.sectionTitle}>Add Expense</Text>
 
-            <Text style={styles.inputLabel}>Category</Text>
-            <View style={{ zIndex: 1000 }}>
-              <DropDownPicker
-                open={open}
-                value={category}
-                items={items}
-                setOpen={setOpen}
-                setValue={setCategory}
-                setItems={setItems}
-                flatListProps={{ nestedScrollEnabled: true }}
-                placeholder="Select a category"
-                style={{
-                  borderColor: "#ccc",
-                  borderRadius: 8,
-                }}
-                dropDownContainerStyle={{
-                  borderColor: "#ccc",
-                  maxHeight: 200,
-                }}
-                listMode="SCROLLVIEW"
-                scrollViewProps={{
-                  nestedScrollEnabled: true,
-                }}
-              />
-            </View>
-            <Text style={styles.inputLabel}>Amount</Text>
-            <TextInput
-              keyboardType="numeric"
-              placeholder="Enter amount"
-              value={amount}
-              onChangeText={(text) => setAmount(text.replace(/[^0-9]/g, ""))}
-              style={styles.input}
+          <Text style={styles.inputLabel}>Category</Text>
+          <View style={{ zIndex: 1000 }}>
+            <CustomDropdown
+              items={items}
+              selectedValue={category}
+              onSelect={setCategory}
             />
-
-            <Text style={styles.inputLabel}>Date</Text>
-            <TouchableOpacity
-              onPress={() => setShowDatePicker(true)}
-              style={styles.dateInputWrapper}
-            >
-              <Text style={styles.dateInput}>{date.toLocaleDateString()}</Text>
-            </TouchableOpacity>
-
-            {showDatePicker && (
-              <DateTimePicker
-                value={date}
-                mode="date"
-                display="default"
-                onChange={(event, selectedDate) => {
-                  const currentDate = selectedDate || date;
-                  setDate(currentDate);
-                  setShowDatePicker(false);
-                }}
-                maximumDate={new Date()}
-              />
-            )}
-
-            <TouchableOpacity
-              style={[
-                styles.addBtn,
-                { backgroundColor: isFormValid ? "#007bff" : "#ccc" },
-              ]}
-              onPress={handleAddExpense}
-              disabled={!isFormValid}
-            >
-              <Text
-                style={{
-                  color: "#fff",
-                  textAlign: "center",
-                  fontWeight: "600",
-                }}
-              >
-                OK
-              </Text>
-            </TouchableOpacity>
           </View>
-        </ScrollView>
+
+          <Text style={styles.inputLabel}>Amount</Text>
+          <TextInput
+            keyboardType="numeric"
+            placeholder="Enter amount"
+            value={amount}
+            onChangeText={(text) => setAmount(text.replace(/[^0-9]/g, ""))}
+            style={styles.input}
+          />
+
+          <Text style={styles.inputLabel}>Date</Text>
+          <TouchableOpacity
+            onPress={() => setShowDatePicker(true)}
+            style={styles.dateInputWrapper}
+          >
+            <Text style={styles.dateInput}>{date.toLocaleDateString()}</Text>
+          </TouchableOpacity>
+
+          {showDatePicker && (
+            <DateTimePicker
+              value={date}
+              mode="date"
+              display="default"
+              onChange={(event, selectedDate) => {
+                const currentDate = selectedDate || date;
+                setDate(currentDate);
+                setShowDatePicker(false);
+              }}
+              maximumDate={new Date()}
+            />
+          )}
+
+          <TouchableOpacity
+            style={[
+              styles.addBtn,
+              { backgroundColor: isFormValid ? "#007bff" : "#ccc" },
+            ]}
+            onPress={handleAddExpense}
+            disabled={!isFormValid}
+          >
+            <Text
+              style={{
+                color: "#fff",
+                textAlign: "center",
+                fontWeight: "600",
+              }}
+            >
+              OK
+            </Text>
+          </TouchableOpacity>
+        </View>
       </Modalize>
     </View>
   );
