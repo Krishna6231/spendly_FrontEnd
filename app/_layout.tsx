@@ -39,7 +39,7 @@ export default function Layout() {
           if (expired && refreshToken) {
             const refreshResponse = await axios.post(
 
-              'http://192.168.0.101:3000/auth/refresh-token',
+              'http://192.168.1.4:3000/auth/refresh-token',
               { refreshToken }
             );
             await SecureStore.setItemAsync(

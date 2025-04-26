@@ -1,37 +1,38 @@
 import React from 'react';
-import { View, Dimensions, Text } from 'react-native';
+import { View, Text, Dimensions } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 
 const screenWidth = Dimensions.get('window').width;
 
-export default function Settings() {
-  // Get last 7 days dates (formatted as DD/MM)
+interface WeeklyLineChartProps {
+  // title?: string;
+  expenseData: number[];
+}
+
+const WeeklyLineChart: React.FC<WeeklyLineChartProps> = ({ expenseData }) => {
+  
+  // Function to get last 7 days labels
   const getLast7Days = () => {
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const dates = [];
     for (let i = 6; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
-      // Show 'Today' for current day, otherwise day name
       dates.push(i === 0 ? 'Today' : days[date.getDay()]);
     }
     return dates;
   };
 
-  // Sample data - replace with your actual expense data
-  const expenseData = [120, 190, 150, 210, 180, 250, 200];
-
   return (
     <View style={{ marginVertical: 16 }}>
-      <Text style={{ 
-        fontSize: 18, 
-        fontWeight: '600', 
+      {/* <Text style={{
+        fontSize: 18,
+        fontWeight: '600',
         marginBottom: 8,
-        paddingHorizontal: 16 ,
+        paddingHorizontal: 16,
       }}>
-        Weekly Expenses
-      </Text>
-      
+      </Text> */}
+
       <LineChart
         data={{
           labels: getLast7Days(),
@@ -39,14 +40,13 @@ export default function Settings() {
             {
               data: expenseData,
               color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`, // Line color
-              strokeWidth: 2 // Line thickness
+              strokeWidth: 2,
             }
           ]
         }}
         width={screenWidth - 28}
         height={240}
         yAxisLabel="₹"
-        yAxisSuffix=""
         yLabelsOffset={10}
         xLabelsOffset={-5}
         chartConfig={{
@@ -60,24 +60,24 @@ export default function Settings() {
             borderRadius: 16,
           },
           propsForDots: {
-            r: '2', // Dot radius
+            r: '2',
             strokeWidth: '1',
-            stroke: '#8641f4' // Purple border for dots
+            stroke: '#8641f4',
           }
         }}
-        bezier // Smooth line
+        bezier
         style={{
           borderRadius: 16,
           alignSelf: 'center',
-          marginTop: 10, // Additional top margin
-
+          marginTop: 10,
         }}
-        withVerticalLines={false} // Remove vertical grid lines
+        withVerticalLines={false}
         withHorizontalLines={true}
         withHorizontalLabels={true}
         withVerticalLabels={true}
-        
       />
     </View>
   );
-}
+};
+
+export default WeeklyLineChart;

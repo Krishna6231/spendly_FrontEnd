@@ -195,7 +195,7 @@ export default function Dashboard() {
       const refreshToken = await SecureStore.getItemAsync("refreshToken");
 
       if (refreshToken) {
-        await axios.post("http://192.168.0.101:3000/auth/logout", {
+        await axios.post("http://192.168.1.4:3000/auth/logout", {
           refreshToken,
         });
       }
