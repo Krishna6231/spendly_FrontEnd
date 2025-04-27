@@ -30,10 +30,6 @@ export default StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  textContainer: {
-    flexDirection: "column",
-    justifyContent: "center",
-  },
   name: {
     fontSize: 16,
     fontWeight: "600",
@@ -101,4 +97,48 @@ export default StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
+
+  modalSubTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  colorGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  colorCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderColor: 'black',
+  },
+  colorIndicator: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    marginRight: 10,
+    marginTop: 5,
+  },
+  textContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  editColorPreviewContainer: {
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  colorPreviewCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: "#ccc",
+  },
+  
 });

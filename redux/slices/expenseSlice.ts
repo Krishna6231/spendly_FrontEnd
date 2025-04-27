@@ -9,6 +9,7 @@ type Expense = {
   date: string;
 };
 type CategoryItem = {
+  color: string;
   category: string;
   limit: number;
 };
@@ -27,7 +28,7 @@ const initialState: ExpenseState = {
 // Add Category
 export const addCategoryAsync = createAsyncThunk(
   'expenses/addCategory',
-  async (categoryPayload: { user_id: string; category: string; limit: number }, { rejectWithValue }) => {
+  async (categoryPayload: { user_id: string; category: string; limit: number, color: string }, { rejectWithValue }) => {
     const access_token = await SecureStore.getItemAsync("accessToken");
     try {
       const response = await axios.post(
@@ -49,10 +50,7 @@ export const addCategoryAsync = createAsyncThunk(
 // Edit Category
 export const editCategoryAsync = createAsyncThunk(
   'expenses/editCategory',
-  async (
-    payload: { user_id: string; category: string; limit: number },
-    { rejectWithValue }
-  ) => {
+  async (payload: { user_id: string; category: string; limit: number },{ rejectWithValue }) => {
     const access_token = await SecureStore.getItemAsync("accessToken");
     try {
       const response = await axios.put(

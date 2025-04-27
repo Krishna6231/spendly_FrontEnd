@@ -9,9 +9,16 @@ import { addCategoryAsync, fetchExpensesAsync, editCategoryAsync } from "../redu
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from "expo-router";
 
+const CATEGORY_COLORS = [
+  "#FF5722", "#3F51B5", "#4CAF50", "#E91E63",
+  "#8BC34A", "#9C27B0", "#FF9800", "#2196F3",
+  "#673AB7", "#03A9F4", "#F44336",
+];
+
 interface CategoryItem {
   category: string;
   limit: number;
+  color: string;
 }
 
 const Category = () => {
@@ -20,6 +27,7 @@ const Category = () => {
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [nameInput, setNameInput] = useState("");
   const [limitInput, setLimitInput] = useState("");
+  const [selectedColor, setSelectedColor] = useState<string>("");
   const [user, setUser] = useState<any>(null);
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
@@ -40,6 +48,7 @@ const Category = () => {
     setEditingCategory(item.category);
     setNameInput(item.category);
     setLimitInput(item.limit.toString());
+    setSelectedColor(item.color);
     setModalVisible(true);
   };
 
@@ -47,12 +56,13 @@ const Category = () => {
     setEditingCategory(null);
     setNameInput("");
     setLimitInput("");
+    setSelectedColor("");
     setModalVisible(true);
   };
 
   const handleSave = async () => {
-    if (!nameInput || !limitInput || !user?.id) {
-      Alert.alert("Missing Fields", "Please fill in all fields.");
+    if (!nameInput || !limitInput || !selectedColor || !user?.id) {
+      Alert.alert("Missing Fields", "Please fill in all fields including color.");
       return;
     }
 
@@ -60,6 +70,7 @@ const Category = () => {
       user_id: user.id,
       category: nameInput,
       limit: parseFloat(limitInput),
+      color: selectedColor,
     };
 
     try {
@@ -78,8 +89,9 @@ const Category = () => {
         setModalVisible(false);
         setNameInput("");
         setLimitInput("");
+        setSelectedColor("");
         setEditingCategory(null);
-        dispatch(fetchExpensesAsync(user.id)); // Refresh list
+        dispatch(fetchExpensesAsync(user.id));
       } else {
         Alert.alert("Error", "Failed to save category.");
         console.error("Category operation failed:", action.payload);
@@ -103,8 +115,11 @@ const Category = () => {
         renderItem={({ item }) => (
           <View style={styles.card}>
             <View style={styles.textContainer}>
-              <Text style={styles.name}>{item.category}</Text>
-              <Text style={styles.limit}>₹{item.limit}</Text>
+              <View style={[styles.colorIndicator, { backgroundColor: item.color }]} />
+              <View>
+                <Text style={styles.name}>{item.category}</Text>
+                <Text style={styles.limit}>₹{item.limit}</Text>
+              </View>
             </View>
             <TouchableOpacity style={styles.editIconContainer} onPress={() => openEditModal(item)}>
               <MaterialIcons name="edit" size={24} color="#555" />
@@ -118,7 +133,7 @@ const Category = () => {
       </TouchableOpacity>
 
       {/* Modal */}
-      <Modal transparent={true} visible={modalVisible} animationType="slide"  onRequestClose={() => setModalVisible(false)}>
+      <Modal transparent={true} visible={modalVisible} animationType="slide" onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>{editingCategory ? "Edit Category" : "Add Category"}</Text>
@@ -127,7 +142,7 @@ const Category = () => {
               onChangeText={setNameInput}
               placeholder="Category Name"
               style={styles.input}
-              editable={!editingCategory}
+              editable={!editingCategory} // Lock name if editing
             />
             <TextInput
               value={limitInput}
@@ -136,6 +151,31 @@ const Category = () => {
               keyboardType="numeric"
               style={styles.input}
             />
+
+            <Text style={styles.modalSubTitle}>Select a Color:</Text>
+
+            {editingCategory ? (
+              // If editing, just SHOW color — no selection
+              <View style={styles.editColorPreviewContainer}>
+                <View style={[styles.colorPreviewCircle, { backgroundColor: selectedColor }]} />
+              </View>
+            ) : (
+              // If adding, ALLOW color selection
+              <View style={styles.colorGrid}>
+                {CATEGORY_COLORS.filter(color => !categoryList.some(cat => cat.color === color))
+                  .map((color) => (
+                    <TouchableOpacity
+                      key={color}
+                      style={[
+                        styles.colorCircle,
+                        { backgroundColor: color, borderWidth: selectedColor === color ? 2 : 0 }
+                      ]}
+                      onPress={() => setSelectedColor(color)}
+                    />
+                ))}
+              </View>
+            )}
+
             <TouchableOpacity style={styles.okBtn} onPress={handleSave}>
               <Text style={styles.okBtnText}>OK</Text>
             </TouchableOpacity>
