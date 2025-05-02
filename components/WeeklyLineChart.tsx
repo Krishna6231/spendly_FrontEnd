@@ -39,7 +39,11 @@ const WeeklyLineChart: React.FC<WeeklyLineChartProps> = ({ expenseData }) => {
           datasets: [
             {
               data: expenseData,
+<<<<<<< HEAD
               color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`, // Line color
+=======
+              color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`,
+>>>>>>> origin/main
               strokeWidth: 2,
             }
           ]
@@ -80,4 +84,8 @@ const WeeklyLineChart: React.FC<WeeklyLineChartProps> = ({ expenseData }) => {
   );
 };
 
+<<<<<<< HEAD
 export default WeeklyLineChart;
+=======
+export default WeeklyLineChart;
+>>>>>>> origin/main

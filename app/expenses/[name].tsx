@@ -8,22 +8,64 @@ import { Ionicons } from '@expo/vector-icons'; // Import Ionicons for the back a
 const AllExpenses = () => {
   const expenses = useSelector((state: RootState) => state.expenses.expenses);
   const { name } = useLocalSearchParams();
-  const router = useRouter(); // Use the router from expo-router
+  const router = useRouter(); 
 
   const filteredAndSortedExpenses = expenses
     .filter((expense) => expense.category === name)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  const renderItem = ({ item }: { item: any }) => (
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+
+    const isToday =
+      date.getDate() === now.getDate() &&
+      date.getMonth() === now.getMonth() &&
+      date.getFullYear() === now.getFullYear();
+
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+
+    const endOfWeek = new Date(now);
+    endOfWeek.setDate(now.getDate() + (6 - now.getDay()));
+
+    const isThisWeek = date >= startOfWeek && date <= endOfWeek;
+
+    if (isToday) {
+      return date.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true,
+      });
+    } else if (isThisWeek) {
+      return date.toLocaleDateString('en-US', {
+        weekday: 'short',
+      });
+    } else {
+      return date.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
+    }
+  };
+
+  // Separate this month's and previous expenses
+  const now = new Date();
+  const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const thisMonthExpenses = filteredAndSortedExpenses.filter((expense) => new Date(expense.date) >= firstOfMonth);
+  const previousExpenses = filteredAndSortedExpenses.filter((expense) => new Date(expense.date) < firstOfMonth);
+
+  const renderExpenseItem = ({ item }: { item: any }) => (
     <View key={item.id} style={styles.expenseCard}>
       <Text style={styles.amountText}>₹{item.amount}</Text>
-      <Text style={styles.dateText}>{new Date(item.date).toLocaleDateString()}</Text>
+      <Text style={styles.dateText}>{formatDate(item.date)}</Text>
     </View>
   );
 
   return (
     <View style={styles.container}>
-      {/* Back button */}
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
         <Ionicons name="arrow-back" size={24} color="black" />
       </TouchableOpacity>
@@ -32,9 +74,27 @@ const AllExpenses = () => {
 
       {filteredAndSortedExpenses.length > 0 ? (
         <FlatList
-          data={filteredAndSortedExpenses}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
+          data={[]}
+          ListHeaderComponent={
+            <>
+              {thisMonthExpenses.length > 0 && (
+                <>
+                  <Text style={styles.sectionTitle}>This Month</Text>
+                  <View style={styles.separator} />
+                  {thisMonthExpenses.map((item) => renderExpenseItem({ item }))}
+                </>
+              )}
+
+              {previousExpenses.length > 0 && (
+                <>
+                  <Text style={styles.sectionTitle}>Previous</Text>
+                  <View style={styles.separator} />
+                  {previousExpenses.map((item) => renderExpenseItem({ item }))}
+                </>
+              )}
+            </>
+          }
+          renderItem={null}
         />
       ) : (
         <Text style={styles.noExpensesText}>No expenses found for this category.</Text>
@@ -53,7 +113,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 16,
     left: 16,
-    zIndex: 1, // Ensure the button stays on top
+    zIndex: 1,
     padding: 8,
   },
   title: {
@@ -63,6 +123,18 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     color: "#333",
     textAlign: "center",
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#555",
+    marginTop: 20,
+    marginBottom: 8,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: "#ddd",
+    marginBottom: 12,
   },
   expenseCard: {
     backgroundColor: "#fff",
@@ -80,7 +152,7 @@ const styles = StyleSheet.create({
   amountText: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#4CAF50", // Green color for amount
+    color: "#4CAF50",
   },
   dateText: {
     fontSize: 14,

@@ -25,6 +25,47 @@ const ExpenseItem = ({ item }: { item: any }) => {
     opacity: deleteOffset.value < 100 ? 1 : 0,
   }));
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+  
+    // Check if same date (ignoring time)
+    const isToday =
+      date.getDate() === now.getDate() &&
+      date.getMonth() === now.getMonth() &&
+      date.getFullYear() === now.getFullYear();
+  
+    // Calculate start and end of the current week
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
+  
+    const endOfWeek = new Date(now);
+    endOfWeek.setDate(now.getDate() + (6 - now.getDay())); // Saturday
+  
+    const isThisWeek = date >= startOfWeek && date <= endOfWeek;
+  
+    if (isToday) {
+      // Only show time
+      return date.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true,
+      });
+    } else if (isThisWeek) {
+      // Only show weekday
+      return date.toLocaleDateString('en-US', {
+        weekday: 'short',
+      });
+    } else {
+      // Full date: 26 Apr, 2025
+      return date.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
+    }
+  };
+
   const toggleDelete = () => {
     if (!showDelete) {
       deleteOffset.value = withTiming(0, { duration: 200 });
@@ -81,7 +122,7 @@ const ExpenseItem = ({ item }: { item: any }) => {
           <Text style={styles.amountText}>₹{item.amount}</Text>
           <Text style={styles.categoryText}>{item.category}</Text>
         </View>
-        <Text style={styles.dateText}>{new Date(item.date).toLocaleDateString()}</Text>
+        <Text style={styles.dateText}>{formatDate(item.date)}</Text>
 
         <Animated.View style={[styles.deleteButton, animatedDeleteStyle]}>
           <TouchableOpacity onPress={handleDelete} style={styles.deleteTouchable}>
@@ -129,7 +170,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9f9f9",
   },
   backButton: {
-    position: "absolute",
+    position: "fixed",
     top: 16,
     left: 16,
     zIndex: 1,

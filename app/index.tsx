@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -9,17 +9,15 @@ import {
   LogBox,
 } from "react-native";
 import { useRouter } from "expo-router";
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { AppDispatch } from "@/redux/store";
 import { Pressable, ScrollView } from "react-native-gesture-handler";
 import { useNavigation } from "@react-navigation/native";
 import { PieChart } from "react-native-chart-kit";
 import CustomDropdown from "@/components/CustomDropdown";
-import { Ionicons } from "@expo/vector-icons";
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import * as SecureStore from "expo-secure-store";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import axios from "axios";
 import { Modalize } from "react-native-modalize";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import styles from "@/styles/index.styles";
@@ -30,24 +28,8 @@ import {
   addExpenseAsync,
   fetchExpensesAsync,
 } from "../redux/slices/expenseSlice";
+import { fetchAnalytics } from "@/redux/slices/analyticsSlice";
 import Fab from "../components/Fab";
-const CATEGORY_COLORS = [
-  "#FF6384",
-  "#36A2EB",
-  "#FFCE56",
-  "#4BC0C0",
-  "#9966FF",
-  "#FF9F40",
-  "#8D6E63",
-  "#00ACC1",
-  "#D4E157",
-  "#F06292",
-  "#BA68C8",
-  "#4DB6AC",
-  "#FFD54F",
-  "#7986CB",
-  "#AED581",
-];
 
 LogBox.ignoreLogs([
   "VirtualizedLists should never be nested inside plain ScrollViews",
@@ -57,7 +39,6 @@ const screenWidth = Dimensions.get("window").width;
 
 export default function Dashboard() {
   const router = useRouter();
-  const [dropdownVisible, setDropdownVisible] = useState(false);
   const modalRef = useRef<Modalize>(null);
   const [category, setCategory] = useState("");
   const [amount, setAmount] = useState("");
@@ -82,6 +63,7 @@ export default function Dashboard() {
         const parsedUser = JSON.parse(userString);
         setUser(parsedUser);
         dispatch(fetchExpensesAsync(parsedUser.id));
+        dispatch(fetchAnalytics(parsedUser.id));
       }
 
       if (token) {
@@ -116,44 +98,59 @@ export default function Dashboard() {
     setItems(formatted);
   }, [categories]);
 
-  const [open, setOpen] = useState(false);
-  const [items, setItems] = useState<{ label: string; value: string }[]>([]);
+  const thisMonthExpenseData = useMemo(() => {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  const categoryMap: Record<string, { amount: number; color: string }> = {};
-  const categoryColorMap: Record<string, string> = {};
-  let colorIndex = 0;
+    // Step 1: Filter expenses for current month
+    const filteredExpenses = expenses.filter((expense) => {
+      const expenseDate = new Date(expense.date); // assuming expense has `date`
+      return expenseDate >= startOfMonth && expenseDate <= now;
+    });
+
+    // Step 2: Create lookup for category colors
+    const categoryColorMap = categories.reduce((acc, item) => {
+      acc[item.category] = item.color;
+      return acc;
+    }, {} as Record<string, string>);
+
+    // Step 3: Sum expenses per category
+    const categoryTotals: Record<string, { amount: number; color: string }> =
+      {};
+
+    filteredExpenses.forEach((expense) => {
+      const { category, amount } = expense;
+
+      if (!categoryTotals[category]) {
+        categoryTotals[category] = {
+          amount: 0,
+          color: categoryColorMap[category] || "#ccc", // fallback color
+        };
+      }
+      categoryTotals[category].amount += amount;
+    });
+
+    // Step 4: Format for PieChart
+    return Object.entries(categoryTotals).map(([category, data]) => ({
+      name: category,
+      amount: data.amount,
+      color: data.color,
+      legendFontColor: "#333",
+      legendFontSize: 14,
+    }));
+  }, [expenses, categories]);
+
+  const [items, setItems] = useState<{ label: string; value: string }[]>([]);
 
   const categoryLimitMap = categories.reduce((acc, item) => {
     acc[item.category] = item.limit;
     return acc;
   }, {} as Record<string, number>);
 
-  expenses.forEach((expense) => {
-    const { category, amount } = expense;
-
-    if (!categoryColorMap[category]) {
-      categoryColorMap[category] =
-        CATEGORY_COLORS[colorIndex % CATEGORY_COLORS.length];
-      colorIndex++;
-    }
-
-    if (categoryMap[category]) {
-      categoryMap[category].amount += amount;
-    } else {
-      categoryMap[category] = {
-        amount,
-        color: categoryColorMap[category],
-      };
-    }
-  });
-
-  const expenseData = Object.entries(categoryMap).map(([category, data]) => ({
-    name: category,
-    amount: data.amount,
-    color: data.color,
-  }));
-
-  const totalSpent = expenseData.reduce((acc, item) => acc + item.amount, 0);
+  const totalSpent = thisMonthExpenseData.reduce(
+    (acc, item) => acc + item.amount,
+    0
+  );
 
   const openAddExpenseModal = () => modalRef.current?.open();
   const closeAddExpenseModal = () => modalRef.current?.close();
@@ -167,7 +164,7 @@ export default function Dashboard() {
     }
 
     try {
-      const formattedDate = date.toISOString().split("T")[0];
+      const formattedDate = date.toISOString();
       const expensePayload = {
         category,
         date: formattedDate,
@@ -179,6 +176,7 @@ export default function Dashboard() {
 
       if (addExpenseAsync.fulfilled.match(result)) {
         Alert.alert("Success", "Expense is added!!");
+        dispatch(fetchAnalytics(user?.id));
         closeAddExpenseModal();
         setCategory("");
         setAmount("");
@@ -192,57 +190,14 @@ export default function Dashboard() {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      const refreshToken = await SecureStore.getItemAsync("refreshToken");
-
-      if (refreshToken) {
-        await axios.post("http://192.168.1.4:3000/auth/logout", {
-          refreshToken,
-        });
-      }
-
-      await SecureStore.deleteItemAsync("authToken");
-      await SecureStore.deleteItemAsync("refreshToken");
-      await SecureStore.deleteItemAsync("userData");
-
-      router.replace("/login");
-    } catch (error) {
-      console.error("Error during logout:", error);
-      Alert.alert("Logout Error", "Something went wrong while logging out.");
-    }
-  };
- 
-  
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Dashboard</Text>
-        <TouchableOpacity onPress={() => router.push("/history")}>
+        <TouchableOpacity onPress={() => router.push("/profile")}>
           <Ionicons name="person-circle-outline" size={38} color="#333" />
         </TouchableOpacity>
-
-        {/* {dropdownVisible && (
-          <View style={styles.dropdown}>
-            <TouchableOpacity onPress={() => { }} style={styles.dropdownItem}>
-              <Text style={styles.dropdownText}>Profile</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => { }} style={styles.dropdownItem}>
-              <Text style={styles.dropdownText}>Settings</Text>
-            </TouchableOpacity>
-
-            <View style={styles.divider} />
-            <TouchableOpacity
-              onPress={handleLogout}
-              style={styles.dropdownItem}
-            >
-              <Text style={[styles.dropdownText, { color: "#e53935" }]}>
-                Logout
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )} */}
       </View>
 
       {/* Pie Chart */}
@@ -252,53 +207,53 @@ export default function Dashboard() {
             Welcome, {user?.name ? user.name : "User"}
           </Text>
           <Text style={{ fontSize: 16, marginTop: 4 }}>
-            Total Spent: ₹{totalSpent}
+            Total Spent This Month: ₹{totalSpent}
           </Text>
         </View>
-        <PieChart
-          data={expenseData.map((item) => ({
-            name: item.name,
-            population: item.amount,
-            color: item.color,
-            legendFontColor: "#333",
-            legendFontSize: 14,
-          }))}
-          width={screenWidth - 40}
-          height={220}
-          chartConfig={{
-            backgroundColor: "#fff",
-            backgroundGradientFrom: "#fff",
-            backgroundGradientTo: "#fff",
-            color: () => `#333`,
-          }}
-          accessor="population"
-          backgroundColor="transparent"
-          paddingLeft="15"
-        />
+        {thisMonthExpenseData.length > 0 ? (
+          <PieChart
+            data={thisMonthExpenseData}
+            width={screenWidth}
+            height={220}
+            chartConfig={{
+              backgroundColor: "#fff",
+              backgroundGradientFrom: "#fff",
+              backgroundGradientTo: "#fff",
+              color: () => `#333`,
+            }}
+            accessor="amount"
+            backgroundColor="transparent"
+            paddingLeft="15"
+          />
+        ) : (
+          <Text>No expenses for this month.</Text>
+        )}
       </View>
 
       {/* Categories */}
       <View style={styles.categoryCard}>
-      <View
-    style={{
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-    }}
-  >
-    <Text style={styles.sectionTitle}>Spending Categories</Text>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Text style={styles.sectionTitle}>Spending Categories</Text>
 
-    <TouchableOpacity
-      onPress={() => router.push("/history")}
-      style={{ flexDirection: "row", alignItems: "center" }}
-    >
-      <FontAwesome name="history" size={18} color="black" style={{ marginRight: 4 }} />
-      <Text style={[styles.sectionTitle, { fontSize: 16 }]}>
-        History
-      </Text>
-    </TouchableOpacity>
-  
-  
+          <TouchableOpacity
+            onPress={() => router.push("/history")}
+            style={{ flexDirection: "row", alignItems: "center" }}
+            activeOpacity={0.5}
+          >
+            <FontAwesome
+              name="history"
+              size={16}
+              color="black"
+              style={{ marginRight: 4, marginBottom: 10 }}
+            />
+            <Text style={[styles.sectionTitle, { fontSize: 16 }]}>History</Text>
+          </TouchableOpacity>
         </View>
 
         <ScrollView
@@ -306,7 +261,7 @@ export default function Dashboard() {
           contentContainerStyle={{ paddingBottom: 12 }}
           style={{ marginTop: 8 }}
         >
-          {expenseData
+          {thisMonthExpenseData
             .map((item) => {
               const limit = categoryLimitMap[item.name] || 0;
               const percentage = limit > 0 ? (item.amount / limit) * 100 : 0;
@@ -340,7 +295,6 @@ export default function Dashboard() {
                   }
                 >
                   <Animated.View
-                    key={index}
                     style={[
                       {
                         borderWidth: 1.5,
@@ -406,7 +360,6 @@ export default function Dashboard() {
             })}
         </ScrollView>
       </View>
-
 
       {/* Add Expense Button */}
       <Fab
