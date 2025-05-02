@@ -65,7 +65,6 @@ export default function Dashboard() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [access_token, setAccessToken] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   const dispatch = useDispatch<AppDispatch>();
   const expenses = useSelector((state: RootState) => state.expenses.expenses);
   const categories = useSelector(
@@ -88,7 +87,6 @@ export default function Dashboard() {
       if (token) {
         setAccessToken(token);
       }
-      setLoading(false);
     };
     getUserDataAndExpenses();
   }, []);
@@ -214,14 +212,7 @@ export default function Dashboard() {
       Alert.alert("Logout Error", "Something went wrong while logging out.");
     }
   };
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        {/* Simple smooth loader */}
-        <AnimatedLoader />
-      </View>
-    );
-  }
+ 
   
   return (
     <View style={styles.container}>
