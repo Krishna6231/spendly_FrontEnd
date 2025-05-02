@@ -9,6 +9,7 @@ import {
   LogBox,
 } from "react-native";
 import { useRouter } from "expo-router";
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { AppDispatch } from "@/redux/store";
 import { Pressable, ScrollView } from "react-native-gesture-handler";
 import { useNavigation } from "@react-navigation/native";
@@ -23,6 +24,7 @@ import { Modalize } from "react-native-modalize";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import styles from "@/styles/index.styles";
 import { Animated } from "react-native";
+import AnimatedLoader from "../components/AnimatedLoader";
 import { useDispatch } from "react-redux";
 import {
   addExpenseAsync,
@@ -63,6 +65,7 @@ export default function Dashboard() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [access_token, setAccessToken] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const dispatch = useDispatch<AppDispatch>();
   const expenses = useSelector((state: RootState) => state.expenses.expenses);
   const categories = useSelector(
@@ -85,6 +88,7 @@ export default function Dashboard() {
       if (token) {
         setAccessToken(token);
       }
+      setLoading(false);
     };
     getUserDataAndExpenses();
   }, []);
@@ -210,22 +214,30 @@ export default function Dashboard() {
       Alert.alert("Logout Error", "Something went wrong while logging out.");
     }
   };
-
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        {/* Simple smooth loader */}
+        <AnimatedLoader />
+      </View>
+    );
+  }
+  
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Dashboard</Text>
-        <TouchableOpacity onPress={() => setDropdownVisible(!dropdownVisible)}>
+        <TouchableOpacity onPress={() => router.push("/history")}>
           <Ionicons name="person-circle-outline" size={38} color="#333" />
         </TouchableOpacity>
 
-        {dropdownVisible && (
+        {/* {dropdownVisible && (
           <View style={styles.dropdown}>
-            <TouchableOpacity onPress={() => {}} style={styles.dropdownItem}>
+            <TouchableOpacity onPress={() => { }} style={styles.dropdownItem}>
               <Text style={styles.dropdownText}>Profile</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {}} style={styles.dropdownItem}>
+            <TouchableOpacity onPress={() => { }} style={styles.dropdownItem}>
               <Text style={styles.dropdownText}>Settings</Text>
             </TouchableOpacity>
 
@@ -239,7 +251,7 @@ export default function Dashboard() {
               </Text>
             </TouchableOpacity>
           </View>
-        )}
+        )} */}
       </View>
 
       {/* Pie Chart */}
@@ -276,7 +288,27 @@ export default function Dashboard() {
 
       {/* Categories */}
       <View style={styles.categoryCard}>
-        <Text style={styles.sectionTitle}>Spending Categories</Text>
+      <View
+    style={{
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+    }}
+  >
+    <Text style={styles.sectionTitle}>Spending Categories</Text>
+
+    <TouchableOpacity
+      onPress={() => router.push("/history")}
+      style={{ flexDirection: "row", alignItems: "center" }}
+    >
+      <FontAwesome name="history" size={18} color="black" style={{ marginRight: 4 }} />
+      <Text style={[styles.sectionTitle, { fontSize: 16 }]}>
+        History
+      </Text>
+    </TouchableOpacity>
+  
+  
+        </View>
 
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -336,9 +368,9 @@ export default function Dashboard() {
                         elevation:
                           percentage >= 70
                             ? blinkingBorder.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [0, 10],
-                              })
+                              inputRange: [0, 1],
+                              outputRange: [0, 10],
+                            })
                             : 0,
                       },
                     ]}
@@ -383,15 +415,13 @@ export default function Dashboard() {
             })}
         </ScrollView>
       </View>
-      <TouchableOpacity onPress={() => router.push("/history")}>
-        <Text style={styles.history}>History</Text>
-      </TouchableOpacity>
+
 
       {/* Add Expense Button */}
       <Fab
         onAddExpense={openAddExpenseModal}
         onAddCategory={() => router.push("/category")}
-        goToSettings={() => router.push("/settings")}
+        goToSettings={() => router.push("/analytics")}
       />
 
       {/* Bottom Sheet Modal */}
