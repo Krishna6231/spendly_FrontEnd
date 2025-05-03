@@ -56,7 +56,7 @@ const Profile = () => {
       const refreshToken = await SecureStore.getItemAsync("refreshToken");
 
       if (refreshToken) {
-        await axios.post("http://192.168.0.101:3000/auth/logout", {
+        await axios.post("http://10.142.22.27:3000/auth/logout", {
           refreshToken,
         });
       }
@@ -64,7 +64,7 @@ const Profile = () => {
       await SecureStore.deleteItemAsync("authToken");
       await SecureStore.deleteItemAsync("refreshToken");
       await SecureStore.deleteItemAsync("userData");
-
+      await SecureStore.setItemAsync('hasLaunched','false');
       router.replace("/login");
     } catch (error) {
       console.error("Error during logout:", error);

@@ -14,7 +14,7 @@ import { Pressable, ScrollView } from "react-native-gesture-handler";
 import { useNavigation } from "@react-navigation/native";
 import { PieChart } from "react-native-chart-kit";
 import CustomDropdown from "@/components/CustomDropdown";
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
+import { FontAwesome, FontAwesome5, Ionicons } from "@expo/vector-icons";
 import * as SecureStore from "expo-secure-store";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
@@ -22,7 +22,6 @@ import { Modalize } from "react-native-modalize";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import styles from "@/styles/index.styles";
 import { Animated } from "react-native";
-import AnimatedLoader from "../components/AnimatedLoader";
 import { useDispatch } from "react-redux";
 import {
   addExpenseAsync,
@@ -104,7 +103,7 @@ export default function Dashboard() {
 
     // Step 1: Filter expenses for current month
     const filteredExpenses = expenses.filter((expense) => {
-      const expenseDate = new Date(expense.date); // assuming expense has `date`
+      const expenseDate = new Date(expense.date); // assuming expense has date
       return expenseDate >= startOfMonth && expenseDate <= now;
     });
 
@@ -194,22 +193,21 @@ export default function Dashboard() {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Dashboard</Text>
+        <Text style={styles.title}>Hi, {user?.name} 👋</Text>
         <TouchableOpacity onPress={() => router.push("/profile")}>
           <Ionicons name="person-circle-outline" size={38} color="#333" />
         </TouchableOpacity>
       </View>
 
-      {/* Pie Chart */}
-      <View style={{ alignItems: "center", marginTop: 20 }}>
-        <View style={{ marginBottom: 16 }}>
-          <Text style={{ fontSize: 22, fontWeight: "bold" }}>
-            Welcome, {user?.name ? user.name : "User"}
-          </Text>
-          <Text style={{ fontSize: 16, marginTop: 4 }}>
-            Total Spent This Month: ₹{totalSpent}
-          </Text>
+      <View style={styles.userSummaryContainer}>
+        <View style={styles.summaryRow}>
+          <Text style={styles.totalSpentLabel}>Total Spent This Month</Text>
+          <Text style={styles.totalSpentAmount}>₹{totalSpent}</Text>
         </View>
+      </View>
+
+      {/* Pie Chart */}
+      <View style={styles.piechart}>
         {thisMonthExpenseData.length > 0 ? (
           <PieChart
             data={thisMonthExpenseData}
@@ -219,14 +217,57 @@ export default function Dashboard() {
               backgroundColor: "#fff",
               backgroundGradientFrom: "#fff",
               backgroundGradientTo: "#fff",
-              color: () => `#333`,
+              color: () => '#333',
             }}
             accessor="amount"
             backgroundColor="transparent"
             paddingLeft="15"
           />
         ) : (
-          <Text>No expenses for this month.</Text>
+          <View
+            style={{
+              justifyContent: "center",
+              alignItems: "center",
+              marginVertical: 40,
+              padding: 20,
+              backgroundColor: "#fff",
+              borderRadius: 10,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
+              elevation: 2,
+            }}
+          >
+            <View>
+              <FontAwesome5
+                name="money-bill-wave"
+                size={40}
+                color="green"
+                style={{ marginBottom: 12 }}
+              />
+            </View>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: "500",
+                color: "#444",
+                textAlign: "center",
+              }}
+            >
+              No expenses for this month.
+            </Text>
+            <Text
+              style={{
+                fontSize: 14,
+                color: "#888",
+                marginTop: 6,
+                textAlign: "center",
+              }}
+            >
+              Try adding your first spending now!
+            </Text>
+          </View>
         )}
       </View>
 
@@ -261,103 +302,118 @@ export default function Dashboard() {
           contentContainerStyle={{ paddingBottom: 12 }}
           style={{ marginTop: 8 }}
         >
-          {thisMonthExpenseData
-            .map((item) => {
-              const limit = categoryLimitMap[item.name] || 0;
-              const percentage = limit > 0 ? (item.amount / limit) * 100 : 0;
-              return { ...item, percentage };
-            })
-            .sort((a, b) => b.percentage - a.percentage)
-            .map((item, index) => {
-              const limit = categoryLimitMap[item.name] || 0;
-              const isOverspent = item.amount > limit;
-              const percentage = limit > 0 ? (item.amount / limit) * 100 : 0;
+          {thisMonthExpenseData.length === 0 ? (
+            <View style={{ alignItems: "center", marginTop: 40 }}>
+              <Text
+                style={{ fontSize: 16, color: "#555", textAlign: "center" }}
+              >
+                Looks like your wallet’s been on vacation this month! 🏖️{"\n\n"}
+                No expenses yet — saving pro or just broke? 😄
+              </Text>
+            </View>
+          ) : (
+            thisMonthExpenseData
+              .map((item) => {
+                const limit = categoryLimitMap[item.name] || 0;
+                const percentage = limit > 0 ? (item.amount / limit) * 100 : 0;
+                return { ...item, percentage };
+              })
+              .sort((a, b) => b.percentage - a.percentage)
+              .map((item, index) => {
+                const limit = categoryLimitMap[item.name] || 0;
+                const isOverspent = item.amount > limit;
+                const percentage = limit > 0 ? (item.amount / limit) * 100 : 0;
 
-              let barColor = "#4CAF50"; // green by default
-              if (isOverspent) barColor = "#B71C1C";
-              else if (percentage >= 90) barColor = "#F44336"; // red
-              else if (percentage >= 70) barColor = "#FF9800"; // orange
-              else if (percentage >= 40) barColor = "#FFEB3B"; // yellow
+                let barColor = "#4CAF50"; // green by default
+                if (isOverspent) barColor = "#B71C1C";
+                else if (percentage >= 90) barColor = "#F44336"; // red
+                else if (percentage >= 70) barColor = "#FF9800"; // orange
+                else if (percentage >= 40) barColor = "#FFEB3B"; // yellow
 
-              const borderColor = blinkingBorder.interpolate({
-                inputRange: [0, 1],
-                outputRange: ["#ccc", barColor],
-              });
+                const borderColor = blinkingBorder.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ["#ccc", barColor],
+                });
 
-              return (
-                <Pressable
-                  key={index}
-                  onPress={() =>
-                    router.push({
-                      pathname: `/expenses/[name]`,
-                      params: { name: item.name },
-                    })
-                  }
-                >
-                  <Animated.View
-                    style={[
-                      {
-                        borderWidth: 1.5,
-                        borderRadius: 10,
-                        padding: 10,
-                        marginVertical: 8,
-                        borderColor: percentage >= 70 ? borderColor : "#ccc",
-                        shadowColor: barColor,
-                        shadowOffset: { width: 0, height: 0 },
-                        shadowOpacity: blinkingBorder,
-                        shadowRadius: blinkingBorder.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [0, 10],
-                        }),
-                        backgroundColor: "#fff",
-                        elevation:
-                          percentage >= 70
-                            ? blinkingBorder.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [0, 10],
-                            })
-                            : 0,
-                      },
-                    ]}
+                return (
+                  <Pressable
+                    key={index}
+                    onPress={() =>
+                      router.push({
+                        pathname: `/expenses/[name]`,
+                        params: { name: item.name },
+                      })
+                    }
                   >
-                    {/* Top Row */}
-                    <View style={styles.cat_top_row}>
-                      <View>
-                        <Text style={{ fontSize: 16, fontWeight: "600" }}>
-                          {item.name}
-                        </Text>
+                    <Animated.View
+                      style={[
+                        {
+                          borderWidth: 1.5,
+                          borderRadius: 10,
+                          padding: 10,
+                          marginVertical: 8,
+                          borderColor: percentage >= 70 ? borderColor : "#ccc",
+                          shadowColor: barColor,
+                          shadowOffset: { width: 0, height: 0 },
+                          shadowOpacity: blinkingBorder,
+                          shadowRadius: blinkingBorder.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0, 10],
+                          }),
+                          backgroundColor: "#fff",
+                          elevation:
+                            percentage >= 70
+                              ? blinkingBorder.interpolate({
+                                  inputRange: [0, 1],
+                                  outputRange: [0, 10],
+                                })
+                              : 0,
+                        },
+                      ]}
+                    >
+                      {/* Top Row */}
+                      <View style={styles.cat_top_row}>
+                        <View>
+                          <Text style={{ fontSize: 16, fontWeight: "600" }}>
+                            {item.name}
+                          </Text>
+                        </View>
+                        <Text style={{ fontSize: 16 }}>₹{item.amount}</Text>
                       </View>
-                      <Text style={{ fontSize: 16 }}>₹{item.amount}</Text>
-                    </View>
 
-                    {/* Progress Bar */}
-                    <View style={styles.progressBarOut}>
-                      <View
-                        style={{
-                          width: `${Math.min(percentage, 100)}%`,
-                          backgroundColor: barColor,
-                          height: "100%",
-                          borderRadius: 5,
-                        }}
-                      />
-                    </View>
-                    {isOverspent ? (
-                      <Text
-                        style={{ marginTop: 4, fontSize: 12, color: "#B71C1C" }}
-                      >
-                        Whoa! You overspent 🚨
-                      </Text>
-                    ) : (
-                      <Text
-                        style={{ marginTop: 4, fontSize: 12, color: "#666" }}
-                      >
-                        Limit: ₹{limit} ({Math.floor(percentage)}%)
-                      </Text>
-                    )}
-                  </Animated.View>
-                </Pressable>
-              );
-            })}
+                      {/* Progress Bar */}
+                      <View style={styles.progressBarOut}>
+                        <View
+                          style={{
+                            width: `${Math.min(percentage, 100)}%`,
+                            backgroundColor: barColor,
+                            height: "100%",
+                            borderRadius: 5,
+                          }}
+                        />
+                      </View>
+                      {isOverspent ? (
+                        <Text
+                          style={{
+                            marginTop: 4,
+                            fontSize: 12,
+                            color: "#B71C1C",
+                          }}
+                        >
+                          Whoa! You overspent 🚨
+                        </Text>
+                      ) : (
+                        <Text
+                          style={{ marginTop: 4, fontSize: 12, color: "#666" }}
+                        >
+                          Limit: ₹{limit} ({Math.floor(percentage)}%)
+                        </Text>
+                      )}
+                    </Animated.View>
+                  </Pressable>
+                );
+              })
+          )}
         </ScrollView>
       </View>
 

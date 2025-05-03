@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useRouter, Slot } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import { ActivityIndicator, View, StyleSheet } from 'react-native';
+import { ActivityIndicator, View, StyleSheet, StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import axios from 'axios';
 import { Provider } from 'react-redux';
-import { store } from '../redux/store'; // Adjust path if needed
+import { store } from '../redux/store';
 
-// Decode JWT manually
 const decodeJwt = (token: string) => {
   const payload = token.split('.')[1];
   const base64Url = payload.replace('-', '+').replace('_', '/'); 
@@ -15,7 +14,6 @@ const decodeJwt = (token: string) => {
   return decodedPayload;
 };
 
-// Check if the token is expired
 const isTokenExpired = (token: string): boolean => {
   const { exp } = decodeJwt(token); 
   return Date.now() >= exp * 1000; 
@@ -23,7 +21,7 @@ const isTokenExpired = (token: string): boolean => {
 
 export default function Layout() {
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [initialRoute, setInitialRoute] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -32,29 +30,31 @@ export default function Layout() {
         const accessToken = await SecureStore.getItemAsync('accessToken');
         const refreshToken = await SecureStore.getItemAsync('refreshToken');
         const user = await SecureStore.getItemAsync('userData');
+        const hasSeenLanding = await SecureStore.getItemAsync('hasSeenLanding');
 
         if (accessToken && user) {
           const expired = isTokenExpired(accessToken);
-          
+
           if (expired && refreshToken) {
             const refreshResponse = await axios.post(
-
-              'http://192.168.1.4:3000/auth/refresh-token',
+              'http://10.142.22.27:3000/auth/refresh-token',
               { refreshToken }
             );
-            await SecureStore.setItemAsync(
-              'accessToken',
-              refreshResponse.data.accessToken
-            );
+            await SecureStore.setItemAsync('accessToken', refreshResponse.data.accessToken);
           }
 
-          setIsLoggedIn(true);
+          if (!hasSeenLanding) {
+            await SecureStore.setItemAsync('hasSeenLanding', 'true');
+            setInitialRoute('/landing');
+          } else {
+            setInitialRoute('/');
+          }
         } else {
-          setIsLoggedIn(false);
+          setInitialRoute('/login');
         }
       } catch (error) {
         console.error('Error checking login status:', error);
-        setIsLoggedIn(false);
+        setInitialRoute('/login');
       } finally {
         setIsLoading(false);
       }
@@ -64,14 +64,10 @@ export default function Layout() {
   }, []);
 
   useEffect(() => {
-    if (!isLoading) {
-      if (isLoggedIn) {
-        router.replace('/');
-      } else {
-        router.replace('/login');
-      }
+    if (!isLoading && initialRoute) {
+      router.replace(initialRoute);
     }
-  }, [isLoading, isLoggedIn, router]);
+  }, [isLoading, initialRoute]);
 
   if (isLoading) {
     return (
@@ -83,18 +79,15 @@ export default function Layout() {
 
   return (
     <Provider store={store}>
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <Stack screenOptions={{ headerShown: false }}>
-        {!isLoggedIn ? (
-          <>
-            <Stack.Screen name="login" />
-            <Stack.Screen name="signup" />
-          </>
-        ) : (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <StatusBar barStyle="light-content" backgroundColor="black" />
+        <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
-        )}
-      </Stack>
-    </GestureHandlerRootView>
+          <Stack.Screen name="landing" />
+          <Stack.Screen name="login" />
+          <Stack.Screen name="signup" />
+        </Stack>
+      </GestureHandlerRootView>
     </Provider>
   );
 }

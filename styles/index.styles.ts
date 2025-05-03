@@ -8,6 +8,13 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
+  piechart : {
+    alignItems: "center",
+    marginTop: 20,
+    backgroundColor: "#f0f4ff",
+    borderRadius: 13,
+    elevation: 3,
+  },
   fabInsideModal: {
     position: "absolute",
     bottom: 20,
@@ -67,8 +74,36 @@ const styles = StyleSheet.create({
     color: "#444",
   },
 
+  userSummaryContainer: {
+    alignSelf: "center",
+    width: "100%",
+    padding: 16,
+    backgroundColor: "#f0f4ff",
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 3,
+    marginTop: 20,
+  },
+  totalSpentLabel: {
+    fontSize: 15,
+    color: "black",
+  },
+  totalSpentAmount: {
+    fontSize: 32,
+    fontWeight: "900",
+    color: "#00bcd4", // catchy blue
+  },
+  summaryRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
   categoryCard: {
-    backgroundColor: "#fff",
+    backgroundColor: "#f0f4ff",
     padding: 16,
     borderRadius: 12,
     marginTop: 30,

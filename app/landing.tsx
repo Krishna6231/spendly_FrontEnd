@@ -1,19 +1,31 @@
-import { View, Text, Button, StyleSheet } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import LottieView from 'lottie-react-native';
 import { useRouter } from 'expo-router';
-import * as SecureStore from 'expo-secure-store';
 
-export default function Landing() {
+export default function LandingPage() {
   const router = useRouter();
 
-  const handleGetStarted = async () => {
-    await SecureStore.setItemAsync('hasLaunched', 'true');
-    router.replace('/login');
+  const handleStart = () => {
+    router.replace('/login'); // or '/signup' if you prefer
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Spendly</Text>
-      <Button title="Get Started" onPress={handleGetStarted} />
+
+      <LottieView
+        style={styles.giff}
+        source={require('../assets/Animation.json')}
+        autoPlay
+        loop
+      />
+
+      <Text style={styles.subtitle}>Explore your expenses smarter</Text>
+
+      <TouchableOpacity style={styles.button} onPress={handleStart}>
+        <Text style={styles.buttonText}>Get Started</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -21,13 +33,36 @@ export default function Landing() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    backgroundColor: '#000',
     alignItems: 'center',
-    padding: 16,
+    justifyContent: 'center',
+    paddingHorizontal: 20,
   },
   title: {
-    fontSize: 36,
+    fontSize: 48,
     fontWeight: 'bold',
+    color: '#fff',
     marginBottom: 20,
+  },
+  giff: {
+    width: 250,
+    height: 250,
+  },
+  subtitle: {
+    color: '#ccc',
+    fontSize: 16,
+    textAlign: 'center',
+    marginVertical: 30,
+  },
+  button: {
+    backgroundColor: '#fff',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 30,
+  },
+  buttonText: {
+    color: '#000',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

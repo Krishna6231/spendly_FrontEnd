@@ -1,97 +1,186 @@
-import { useState } from 'react';
-import { View, Text, Alert, TouchableOpacity } from 'react-native';
+import { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Keyboard,
+  Dimensions,
+  StatusBar,
+} from 'react-native';
+import { Snackbar } from 'react-native-paper';
 import { useRouter } from 'expo-router';
-import { AuthInput } from '../components/AuthInput';
+import LottieView from 'lottie-react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
-import Constants from 'expo-constants';
 
-const API_URL = Constants.expoConfig?.extra?.API_URL;
+const { height } = Dimensions.get('window');
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+const [snackbarMessage, setSnackbarMessage] = useState('');
+const [snackbarColor, setSnackbarColor] = useState('#000');
 
-  const handleLogin = async () => {
+const showSnackbar = (message: string, color: string = '#000') => {
+  setSnackbarMessage(message);
+  setSnackbarColor(color);
+  setSnackbarVisible(true);
+};
 
-    // Check if email and password are filled
-    if (!email || !password) {
-      console.log('Email or password is missing.');
-      return Alert.alert('Error', 'Please fill in all fields');
-    }
-    
-      try {
-        const response = await axios.post('http://192.168.1.4:3000/auth/login', {
-          email,
-          password,
-        });
-  
-        const { accessToken, refreshToken, user } = response.data;
-  
-        // Store tokens and user data in SecureStore
-        await SecureStore.setItemAsync('accessToken', accessToken);
-        await SecureStore.setItemAsync('refreshToken', refreshToken);
-        await SecureStore.setItemAsync('userData', JSON.stringify(user));
-  
-        Alert.alert('Login Success', 'Redirecting to dashboard...');
-        router.replace('/');
-      } catch (error: any) {
-        const errorMsg =
-          error?.response?.data?.message || 'Login failed. Try again.';
-        Alert.alert('Login Failed', errorMsg);
-      }
-    
-    
-  };
+const handleLogin = async () => {
+  if (!email || !password) {
+    return showSnackbar('Please fill in all fields', 'red');
+  }
+
+  try {
+    const response = await axios.post('http://10.142.22.27:3000/auth/login', {
+      email,
+      password,
+    });
+
+    const { accessToken, refreshToken, user } = response.data;
+
+    await SecureStore.setItemAsync('accessToken', accessToken);
+    await SecureStore.setItemAsync('refreshToken', refreshToken);
+    await SecureStore.setItemAsync('userData', JSON.stringify(user));
+
+    showSnackbar('Login successful...', 'black');
+    setTimeout(() => router.replace('/'),300);
+  } catch (error: any) {
+    const msg = error?.response?.data?.message || 'Login failed. Try again.';
+    showSnackbar(msg, 'red');
+  }
+};
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', padding: 20 }}>
-      <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>
-        Login
-      </Text>
-
-      <AuthInput label="Email" value={email} onChangeText={setEmail} />
-      <AuthInput
-        label="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-
-      <TouchableOpacity
-        style={{
-          backgroundColor: '#007bff',
-          padding: 12,
-          borderRadius: 8,
-          marginTop: 12,
-        }}
-        onPress={handleLogin}
+    
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+              <StatusBar barStyle="dark-content" backgroundColor="white" />
+      
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
       >
-        <Text style={{ color: '#fff', textAlign: 'center' }}>Login</Text>
-      </TouchableOpacity>
+        <Text style={styles.header}>Spendly</Text>
 
-      <TouchableOpacity
-        style={{ marginTop: 12 }}
-        onPress={() => router.push('/signup')}
-      >
-        <Text style={{ color: '#007bff', textAlign: 'center' }}>
-          Don't have an account? Sign up
-        </Text>
-      </TouchableOpacity>
+        <LottieView
+          source={require('../assets/Login.json')}
+          autoPlay
+          loop
+          style={styles.lottie}
+        />
 
-      <TouchableOpacity
-        style={{
-          marginTop: 20,
-          backgroundColor: '#db4437',
-          padding: 12,
-          borderRadius: 8,
-        }}
-        onPress={() => Alert.alert('Google Sign-In', 'This is a dummy button.')}
-      >
-        <Text style={{ color: '#fff', textAlign: 'center' }}>
-          Sign in with Google
-        </Text>
-      </TouchableOpacity>
-    </View>
+        <View style={styles.form}>
+          <Text style={styles.label}>Email</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="you@example.com"
+            placeholderTextColor="#999"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+
+          <Text style={styles.label}>Password</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="••••••••"
+            placeholderTextColor="#999"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+
+          <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
+            <Text style={styles.loginText}>Login</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => router.push('/signup')}>
+            <Text style={styles.signUpLink}>
+              Don't have an account? <Text style={{ fontWeight: 'bold' }}>Sign up</Text>
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+      <Snackbar
+  visible={snackbarVisible}
+  onDismiss={() => setSnackbarVisible(false)}
+  // duration={2000}
+  style={{ backgroundColor: snackbarColor }}
+>
+  {snackbarMessage}
+</Snackbar>
+
+    </KeyboardAvoidingView>
+    
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  scrollContent: {
+    paddingVertical: 40,
+    paddingHorizontal: 24,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
+  header: {
+    fontSize: 40,
+    fontWeight: 'bold',
+    marginBottom: 40,
+    color: '#111',
+  },
+  lottie: {
+    width: 260,
+    height: 260,
+    marginBottom: 30,
+  },
+  form: {
+    width: '100%',
+  },
+  label: {
+    fontSize: 18,
+    marginBottom: 6,
+    color: '#222',
+  },
+  input: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    fontSize: 16,
+    paddingVertical: 10,
+    marginBottom: 24,
+    color: '#000',
+  },
+  loginBtn: {
+    backgroundColor: '#000',
+    paddingVertical: 14,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  loginText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 18,
+  },
+  signUpLink: {
+    textAlign: 'center',
+    marginTop: 24,
+    fontSize: 16,
+    color: '#444',
+  },
+});
