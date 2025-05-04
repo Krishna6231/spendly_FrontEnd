@@ -4,12 +4,10 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Keyboard,
   Dimensions,
   StatusBar,
 } from 'react-native';
@@ -35,13 +33,22 @@ const showSnackbar = (message: string, color: string = '#000') => {
   setSnackbarVisible(true);
 };
 
+useEffect(()=>{
+    const getUU = async () => {
+      const uu = await SecureStore.getItemAsync('hasSeenLanding');
+      console.log(uu);
+    };
+
+    getUU();
+  },[]);
+
 const handleLogin = async () => {
   if (!email || !password) {
     return showSnackbar('Please fill in all fields', 'red');
   }
 
   try {
-    const response = await axios.post('http://10.142.22.27:3000/auth/login', {
+    const response = await axios.post('http://192.168.0.101:3000/auth/login', {
       email,
       password,
     });
@@ -117,7 +124,6 @@ const handleLogin = async () => {
       <Snackbar
   visible={snackbarVisible}
   onDismiss={() => setSnackbarVisible(false)}
-  // duration={2000}
   style={{ backgroundColor: snackbarColor }}
 >
   {snackbarMessage}

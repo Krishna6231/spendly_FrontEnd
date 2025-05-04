@@ -6,6 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import axios from 'axios';
 import { Provider } from 'react-redux';
 import { store } from '../redux/store';
+import { ThemeProvider } from '../theme/ThemeContext';
 
 const decodeJwt = (token: string) => {
   const payload = token.split('.')[1];
@@ -37,7 +38,7 @@ export default function Layout() {
 
           if (expired && refreshToken) {
             const refreshResponse = await axios.post(
-              'http://10.142.22.27:3000/auth/refresh-token',
+              'http://192.168.0.101:3000/auth/refresh-token',
               { refreshToken }
             );
             await SecureStore.setItemAsync('accessToken', refreshResponse.data.accessToken);
@@ -45,6 +46,7 @@ export default function Layout() {
 
           if (!hasSeenLanding) {
             await SecureStore.setItemAsync('hasSeenLanding', 'true');
+            await SecureStore.setItemAsync('theme', 'light');
             setInitialRoute('/landing');
           } else {
             setInitialRoute('/');
@@ -80,6 +82,7 @@ export default function Layout() {
   return (
     <Provider store={store}>
       <GestureHandlerRootView style={{ flex: 1 }}>
+        <ThemeProvider>
         <StatusBar barStyle="light-content" backgroundColor="black" />
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
@@ -87,6 +90,7 @@ export default function Layout() {
           <Stack.Screen name="login" />
           <Stack.Screen name="signup" />
         </Stack>
+        </ThemeProvider>
       </GestureHandlerRootView>
     </Provider>
   );

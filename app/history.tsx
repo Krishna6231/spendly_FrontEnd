@@ -12,6 +12,8 @@ import Animated, {
 import * as SecureStore from "expo-secure-store";
 import { deleteExpenseAsync } from '@/redux/slices/expenseSlice';
 import { ThunkDispatch } from '@reduxjs/toolkit';
+import allExpensesStyles from '@/styles/allExpenses.styles';
+import { useTheme } from '@/theme/ThemeContext';
 
 // Typing the dispatch as ThunkDispatch
 const ExpenseItem = ({ item }: { item: any }) => {
@@ -19,6 +21,9 @@ const ExpenseItem = ({ item }: { item: any }) => {
   const deleteOffset = useSharedValue(100);
   const dispatch = useDispatch<ThunkDispatch<RootState, unknown, any>>();
   const [user, setUser] = useState<any>(null);
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === 'dark';
+  const styles = allExpensesStyles(isDark);
 
   const animatedDeleteStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: deleteOffset.value }],
@@ -137,6 +142,9 @@ const ExpenseItem = ({ item }: { item: any }) => {
 const History = () => {
   const expenses = useSelector((state: RootState) => state.expenses.expenses);
   const router = useRouter();
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === 'dark';
+  const styles = allExpensesStyles(isDark);
 
   const sortedExpenses = [...expenses].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -145,7 +153,7 @@ const History = () => {
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color="black" />
+        <Ionicons name="arrow-back" size={24} color={isDark ? "white" : "#4b5563"} />
       </TouchableOpacity>
 
       <Text style={styles.title}>History</Text>
