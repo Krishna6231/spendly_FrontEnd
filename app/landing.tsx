@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { useRouter } from 'expo-router';
-import * as SecureStore from "expo-secure-store";
 
 export default function LandingPage() {
   const router = useRouter();

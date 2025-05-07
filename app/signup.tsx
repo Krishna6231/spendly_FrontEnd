@@ -37,7 +37,7 @@ export default function Signup() {
 
     try {
       setLoading(true);
-      await axios.post('http://192.168.0.101:3000/auth/signup', {
+      await axios.post('https://spendly-backend-5rgu.onrender.com/auth/signup', {
         name,
         email,
         password,

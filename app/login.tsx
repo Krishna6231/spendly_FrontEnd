@@ -17,7 +17,6 @@ import LottieView from 'lottie-react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-const { height } = Dimensions.get('window');
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -48,7 +47,7 @@ const handleLogin = async () => {
   }
 
   try {
-    const response = await axios.post('http://192.168.0.101:3000/auth/login', {
+    const response = await axios.post('https://spendly-backend-5rgu.onrender.com/auth/login', {
       email,
       password,
     });

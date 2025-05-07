@@ -21,7 +21,7 @@ const ExpenseItem = ({ item }: { item: any }) => {
   const deleteOffset = useSharedValue(100);
   const dispatch = useDispatch<ThunkDispatch<RootState, unknown, any>>();
   const [user, setUser] = useState<any>(null);
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
   const isDark = theme === 'dark';
   const styles = allExpensesStyles(isDark);
 
@@ -170,90 +170,5 @@ const History = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    flex: 1,
-    backgroundColor: "#f9f9f9",
-  },
-  backButton: {
-    position: "fixed",
-    top: 16,
-    left: 16,
-    zIndex: 1,
-    padding: 8,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginTop: 5,
-    marginBottom: 15,
-    color: "#333",
-    textAlign: "center",
-  },
-  expenseCard: {
-    backgroundColor: "#fff",
-    padding: 15,
-    marginVertical: 8,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#eee",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 5,
-    elevation: 2,
-    position: 'relative',
-  },
-  expenseRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  amountText: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#4CAF50",
-  },
-  categoryText: {
-    fontSize: 16,
-    color: "#888",
-  },
-  dateText: {
-    fontSize: 14,
-    color: "#888",
-    marginTop: 4,
-  },
-  noExpensesText: {
-    fontSize: 16,
-    color: "#999",
-    textAlign: "center",
-    marginTop: 20,
-  },
-  deleteButton: {
-    position: 'absolute',
-    right: 10,
-    top: '50%',
-    transform: [{ translateY: -20 }],
-    backgroundColor: '#e53935',
-    borderRadius: 20,
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 1, height: 2 },
-    shadowRadius: 4,
-  },
-  deleteTouchable: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
 
 export default History;

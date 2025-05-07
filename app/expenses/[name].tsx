@@ -1,4 +1,4 @@
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, FlatList, TouchableOpacity } from "react-native";
 import React from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
@@ -11,7 +11,7 @@ const AllExpenses = () => {
   const expenses = useSelector((state: RootState) => state.expenses.expenses);
   const { name } = useLocalSearchParams();
   const router = useRouter(); 
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
   const isDark = theme === 'dark';
   const styles = catExpensesStyles(isDark);
 

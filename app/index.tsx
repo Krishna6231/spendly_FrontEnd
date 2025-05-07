@@ -1,17 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Dimensions,
-  Alert,
-  TextInput,
-  LogBox,
-} from "react-native";
+import { View, Text, TouchableOpacity, Dimensions, Alert, TextInput, LogBox } from "react-native";
 import { useRouter } from "expo-router";
 import { AppDispatch } from "@/redux/store";
 import { Pressable, ScrollView } from "react-native-gesture-handler";
-import { useNavigation } from "@react-navigation/native";
 import { PieChart } from "react-native-chart-kit";
 import CustomDropdown from "@/components/CustomDropdown";
 import { FontAwesome, FontAwesome5, Ionicons } from "@expo/vector-icons";
@@ -23,10 +14,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import indexStyles from "@/styles/index.styles";
 import { Animated } from "react-native";
 import { useDispatch } from "react-redux";
-import {
-  addExpenseAsync,
-  fetchExpensesAsync,
-} from "../redux/slices/expenseSlice";
+import { addExpenseAsync, fetchExpensesAsync } from "../redux/slices/expenseSlice";
 import { fetchAnalytics } from "@/redux/slices/analyticsSlice";
 import Fab from "../components/Fab";
 import { useTheme } from "../theme/ThemeContext";
@@ -52,8 +40,7 @@ export default function Dashboard() {
     (state: RootState) => state.expenses.categories
   );
   const blinkingBorder = useRef(new Animated.Value(0)).current;
-  const navigation = useNavigation();
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
   const isDark = theme === "dark";
   const styles = indexStyles(isDark);
 
