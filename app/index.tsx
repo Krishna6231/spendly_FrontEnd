@@ -29,6 +29,7 @@ import {
 } from "../redux/slices/expenseSlice";
 import { fetchAnalytics } from "@/redux/slices/analyticsSlice";
 import Fab from "../components/Fab";
+import RingChart from "@/components/RingChart";
 
 LogBox.ignoreLogs([
   "VirtualizedLists should never be nested inside plain ScrollViews",
@@ -138,7 +139,7 @@ export default function Dashboard() {
       legendFontSize: 14,
     }));
   }, [expenses, categories]);
-
+  console.log(thisMonthExpenseData);
   const [items, setItems] = useState<{ label: string; value: string }[]>([]);
 
   const categoryLimitMap = categories.reduce((acc, item) => {
@@ -206,7 +207,7 @@ export default function Dashboard() {
         </View>
       </View>
 
-      {/* Pie Chart */}
+      {/* Pie Chart
       <View style={styles.piechart}>
         {thisMonthExpenseData.length > 0 ? (
           <PieChart
@@ -269,8 +270,69 @@ export default function Dashboard() {
             </Text>
           </View>
         )}
-      </View>
+      </View> */}
+      
+      {thisMonthExpenseData.length > 0 ? (
+  <View style={{ alignItems: "center", justifyContent: "center" }}>
+    <RingChart
+      data={thisMonthExpenseData.map(item => ({
+        key: item.name,
+        value: item.amount,
+        color: item.color,
+      }))}
 
+      size={220}
+      strokeWidth={40}
+    />
+  </View>
+) : (
+  <View
+    style={{
+      justifyContent: "center",
+      alignItems: "center",
+      marginVertical: 40,
+      padding: 20,
+      backgroundColor: "#fff",
+      borderRadius: 10,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 2,
+    }}
+  >
+    <View>
+      <FontAwesome5
+        name="money-bill-wave"
+        size={40}
+        color="green"
+        style={{ marginBottom: 12 }}
+      />
+    </View>
+    <Text
+      style={{
+        fontSize: 18,
+        fontWeight: "500",
+        color: "#444",
+        textAlign: "center",
+      }}
+    >
+      No expenses for this month.
+    </Text>
+    <Text
+      style={{
+        fontSize: 14,
+        color: "#888",
+        marginTop: 6,
+        textAlign: "center",
+      }}
+    >
+      Try adding your first spending now!
+    </Text>
+  </View>
+)}
+
+        
       {/* Categories */}
       <View style={styles.categoryCard}>
         <View

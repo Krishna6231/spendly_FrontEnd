@@ -17,6 +17,7 @@ import { ThunkDispatch } from '@reduxjs/toolkit';
 const ExpenseItem = ({ item }: { item: any }) => {
   const [showDelete, setShowDelete] = React.useState(false);
   const deleteOffset = useSharedValue(100);
+  const contentOffset = useSharedValue(0);
   const dispatch = useDispatch<ThunkDispatch<RootState, unknown, any>>();
   const [user, setUser] = useState<any>(null);
 
@@ -24,26 +25,29 @@ const ExpenseItem = ({ item }: { item: any }) => {
     transform: [{ translateX: deleteOffset.value }],
     opacity: deleteOffset.value < 100 ? 1 : 0,
   }));
-
+  const animatedContentStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: contentOffset.value }],
+  }));
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-  
+
     // Check if same date (ignoring time)
     const isToday =
       date.getDate() === now.getDate() &&
       date.getMonth() === now.getMonth() &&
       date.getFullYear() === now.getFullYear();
-  
+
     // Calculate start and end of the current week
     const startOfWeek = new Date(now);
     startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
-  
+
     const endOfWeek = new Date(now);
     endOfWeek.setDate(now.getDate() + (6 - now.getDay())); // Saturday
-  
+
     const isThisWeek = date >= startOfWeek && date <= endOfWeek;
-  
+
+
     if (isToday) {
       // Only show time
       return date.toLocaleTimeString('en-US', {
@@ -69,8 +73,10 @@ const ExpenseItem = ({ item }: { item: any }) => {
   const toggleDelete = () => {
     if (!showDelete) {
       deleteOffset.value = withTiming(0, { duration: 200 });
+      contentOffset.value = withTiming(-40, { duration: 200 }); // Move content left
     } else {
       deleteOffset.value = withTiming(100, { duration: 200 });
+      contentOffset.value = withTiming(0, { duration: 200 }); // Move content back
     }
     setShowDelete(!showDelete);
   };
@@ -120,7 +126,9 @@ const ExpenseItem = ({ item }: { item: any }) => {
       <View style={styles.expenseCard}>
         <View style={styles.expenseRow}>
           <Text style={styles.amountText}>₹{item.amount}</Text>
-          <Text style={styles.categoryText}>{item.category}</Text>
+          <Animated.View style={[styles.categoryWrapper, animatedContentStyle]}>
+            <Text style={styles.categoryText}>{item.category}</Text>
+          </Animated.View>
         </View>
         <Text style={styles.dateText}>{formatDate(item.date)}</Text>
 
@@ -197,6 +205,7 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 2,
     position: 'relative',
+    overflow: 'visible', // Add this to ensure trash icon isn't clipped
   },
   expenseRow: {
     flexDirection: "row",
@@ -209,8 +218,9 @@ const styles = StyleSheet.create({
     color: "#4CAF50",
   },
   categoryText: {
-    fontSize: 16,
-    color: "#888",
+    fontSize: 18, // increased by 2 points
+    color: "#000", // changed to black
+    marginTop: 10, // pushes it slightly down
   },
   dateText: {
     fontSize: 14,
@@ -225,7 +235,7 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     position: 'absolute',
-    right: 10,
+    right: 15, // Increased from 10 to 15 for better visibility
     top: '50%',
     transform: [{ translateY: -20 }],
     backgroundColor: '#e53935',
@@ -236,9 +246,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 5,
     shadowColor: '#000',
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.3, // Increased opacity
     shadowOffset: { width: 1, height: 2 },
     shadowRadius: 4,
+    zIndex: 1, // Ensure it's above other elements
   },
   deleteTouchable: {
     width: 40,
@@ -246,6 +257,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  categoryWrapper: {
+    justifyContent: 'center',
+    marginRight: 20, // ensures space between category and delete icon
+  },
+
+
 });
 
 export default History;
