@@ -40,4 +40,4 @@ cd spendly-frontend
 npm install
 
 # 3. Start Expo server
-npx expo start
+npx expo start or  npx expo start --tunnel
