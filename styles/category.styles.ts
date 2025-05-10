@@ -85,6 +85,22 @@ const categoryStyles = (isDark: boolean) =>
       textAlign: "center",
       color: isDark ? "#f8fafc" : "#111827",
     },
+    modalSubTitle2: {
+      fontSize: 16,
+      fontWeight: "600",
+      marginVertical: "auto",
+      color: isDark ? "#e2e8f0" : "#374151",
+    },
+    sc: {
+      flexDirection: "row",
+      marginVertical: 10,
+    },
+    colorBar: {
+      marginHorizontal: "auto",
+      width: "50%",
+      height: 35,
+      borderRadius: 10,
+    },
     input: {
       borderWidth: 1,
       borderColor: isDark ? "#475569" : "#ccc",

@@ -1,6 +1,6 @@
-import { createSlice, createAsyncThunk} from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
-import * as SecureStore from "expo-secure-store";
+import * as SecureStore from 'expo-secure-store';
 
 type Expense = {
   id: string;
@@ -8,6 +8,7 @@ type Expense = {
   amount: number;
   date: string;
 };
+
 type CategoryItem = {
   color: string;
   category: string;
@@ -17,94 +18,78 @@ type CategoryItem = {
 interface ExpenseState {
   expenses: Expense[];
   categories: CategoryItem[];
+  loading: boolean;
 }
-
 
 const initialState: ExpenseState = {
   expenses: [],
   categories: [],
+  loading: false,
 };
 
-// Add Category
-export const addCategoryAsync = createAsyncThunk(
-  'expenses/addCategory',
-  async (categoryPayload: { user_id: string; category: string; limit: number, color: string }, { rejectWithValue }) => {
-    const access_token = await SecureStore.getItemAsync("accessToken");
-    try {
-      const response = await axios.post(
-        'https://spendly-backend-5rgu.onrender.com/expense/add-category',
-        categoryPayload,
-        {
-          headers: {
-            Authorization: `Bearer ${access_token}`,
-          },
-        }
-      );
-      return response.data; // the created category object
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data || error.message);
-    }
-  }
-);
+const getAccessToken = async () => await SecureStore.getItemAsync('accessToken');
 
-// Edit Category
-export const editCategoryAsync = createAsyncThunk(
-  'expenses/editCategory',
-  async (payload: { user_id: string; category: string; limit: number },{ rejectWithValue }) => {
-    const access_token = await SecureStore.getItemAsync("accessToken");
-    try {
-      const response = await axios.put(
-        'https://spendly-backend-5rgu.onrender.com/expense/edit-category',
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${access_token}`,
-          },
-        }
-      );
-      return response.data; // Should return updated category
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data || error.message);
-    }
-  }
-);
+// ─── Async Thunks ─────────────────────────────────────────────────────
 
-
-// Fetch expenses and categories
 export const fetchExpensesAsync = createAsyncThunk(
   'expenses/fetchExpenses',
   async (userId: string, { rejectWithValue }) => {
-    const access_token = await SecureStore.getItemAsync("accessToken");
     try {
+      const token = await getAccessToken();
       const response = await axios.get(
         `https://spendly-backend-5rgu.onrender.com/expense/user?userid=${userId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${access_token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      return response.data; // { expenses, categories }
+      return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
 
-// Add expense
 export const addExpenseAsync = createAsyncThunk(
   'expenses/addExpense',
   async (expensePayload: Expense, { rejectWithValue }) => {
-    const access_token = await SecureStore.getItemAsync("accessToken");
     try {
+      const token = await getAccessToken();
       const response = await axios.post(
         'https://spendly-backend-5rgu.onrender.com/expense/add',
         expensePayload,
-        {
-          headers: {
-            Authorization: `Bearer ${access_token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const addCategoryAsync = createAsyncThunk(
+  'expenses/addCategory',
+  async (payload: { user_id: string; category: string; limit: number; color: string }, { rejectWithValue }) => {
+    try {
+      const token = await getAccessToken();
+      const response = await axios.post(
+        'https://spendly-backend-5rgu.onrender.com/expense/add-category',
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const editCategoryAsync = createAsyncThunk(
+  'expenses/editCategory',
+  async (payload: { user_id: string; category: string; limit: number; color: string}, { rejectWithValue }) => {
+    try {
+      const token = await getAccessToken();
+      const response = await axios.put(
+        'https://spendly-backend-5rgu.onrender.com/expense/edit-category',
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       return response.data;
     } catch (error: any) {
@@ -115,73 +100,96 @@ export const addExpenseAsync = createAsyncThunk(
 
 export const deleteExpenseAsync = createAsyncThunk(
   'expenses/deleteExpense',
-  async (
-    payload: { expenseId: string; userId: string },
-    { rejectWithValue }
-  ) => {
-    const access_token = await SecureStore.getItemAsync("accessToken");
+  async (payload: { expenseId: string; userId: string }, { rejectWithValue }) => {
     try {
+      const token = await getAccessToken();
       await axios.delete(
         `https://spendly-backend-5rgu.onrender.com/expense/delete?expenseId=${payload.expenseId}&userId=${payload.userId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${access_token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      return payload.expenseId; // We'll use this to remove from local state
+      return payload.expenseId;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
 
+// ─── Slice ──────────────────────────────────────────────────────────────
+
 const expenseSlice = createSlice({
   name: 'expenses',
   initialState,
   reducers: {
-    setExpenses: (state, action) => {
+    setExpenses: (state, action: PayloadAction<Expense[]>) => {
       state.expenses = action.payload;
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(addExpenseAsync.fulfilled, (state, action) => {
-        state.expenses.push(action.payload);
-      })
-      .addCase(addExpenseAsync.rejected, (state, action) => {
-        console.error('Failed to add expense:', action.payload);
+      // FETCH EXPENSES
+      .addCase(fetchExpensesAsync.pending, (state) => {
+        state.loading = true;
       })
       .addCase(fetchExpensesAsync.fulfilled, (state, action) => {
         state.expenses = action.payload.expenses;
         state.categories = action.payload.categories;
+        state.loading = false;
       })
-      .addCase(fetchExpensesAsync.rejected, (state, action) => {
-        console.error('Failed to fetch expenses:', action.payload);
+      .addCase(fetchExpensesAsync.rejected, (state) => {
+        state.loading = false;
+      })
+
+      // ADD EXPENSE
+      .addCase(addExpenseAsync.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(addExpenseAsync.fulfilled, (state, action) => {
+        state.expenses.push(action.payload);
+        state.loading = false;
+      })
+      .addCase(addExpenseAsync.rejected, (state) => {
+        state.loading = false;
+      })
+
+      // ADD CATEGORY
+      .addCase(addCategoryAsync.pending, (state) => {
+        state.loading = true;
       })
       .addCase(addCategoryAsync.fulfilled, (state, action) => {
         state.categories.push(action.payload);
+        state.loading = false;
       })
-      .addCase(addCategoryAsync.rejected, (state, action) => {
-        console.error("Failed to add category:", action.payload);
+      .addCase(addCategoryAsync.rejected, (state) => {
+        state.loading = false;
+      })
+
+      // EDIT CATEGORY
+      .addCase(editCategoryAsync.pending, (state) => {
+        state.loading = true;
       })
       .addCase(editCategoryAsync.fulfilled, (state, action) => {
-        const updated = action.payload;
-        const index = state.categories.findIndex(cat => cat.category === updated.category);
+        const { category, limit } = action.payload;
+        const index = state.categories.findIndex((cat) => cat.category === category);
         if (index !== -1) {
-          state.categories[index].limit = updated.limit;
+          state.categories[index].limit = limit;
         }
+        state.loading = false;
       })
-      .addCase(editCategoryAsync.rejected, (state, action) => {
-        console.error("Failed to edit category:", action.payload);
+      .addCase(editCategoryAsync.rejected, (state) => {
+        state.loading = false;
+      })
+
+      // DELETE EXPENSE
+      .addCase(deleteExpenseAsync.pending, (state) => {
+        state.loading = true;
       })
       .addCase(deleteExpenseAsync.fulfilled, (state, action) => {
-        state.expenses = state.expenses.filter(exp => exp.id !== action.payload);
+        state.expenses = state.expenses.filter((exp) => exp.id !== action.payload);
+        state.loading = false;
       })
-      .addCase(deleteExpenseAsync.rejected, (state, action) => {
-        console.error("Failed to delete expense:", action.payload);
+      .addCase(deleteExpenseAsync.rejected, (state) => {
+        state.loading = false;
       });
-      
   },
 });
 

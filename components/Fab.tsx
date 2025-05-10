@@ -16,13 +16,13 @@ import { Easing } from "react-native-reanimated";
 interface FabProps {
   onAddExpense: () => void;
   onAddCategory: () => void;
-  goToSettings: () => void;
+  goToAnalytics: () => void;
 }
 
 const Fab: React.FC<FabProps> = ({
   onAddExpense,
   onAddCategory,
-  goToSettings,
+  goToAnalytics,
 }) => {
   const [expanded, setExpanded] = useState(false);
   const offset = useSharedValue(0);
@@ -64,7 +64,7 @@ const Fab: React.FC<FabProps> = ({
       <Animated.View style={[styles.actionButtonContainer, animatedStyle3]}>
         <Pressable
           style={styles.fabItem}
-          onPress={() => handleAction(goToSettings)}
+          onPress={() => handleAction(goToAnalytics)}
           android_ripple={{ color: "transparent" }}
         >
           <View style={styles.labelContainer}>

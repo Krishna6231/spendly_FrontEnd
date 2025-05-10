@@ -18,7 +18,6 @@ import { useRouter } from "expo-router";
 import moment from "moment"; // Ensure moment is installed
 import analyticsStyles from "@/styles/analytics.styles";
 import { useTheme } from "../theme/ThemeContext";
-import ChartWithNavigation from "@/components/VerticalBarChart";
 
 const AnalyticsScreen = () => {
   const analytics = useSelector(

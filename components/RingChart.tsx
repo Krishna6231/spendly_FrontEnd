@@ -1,5 +1,12 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  ActivityIndicator,
+  Animated,
+} from 'react-native';
 import Svg, { G, Circle, Path } from 'react-native-svg';
 
 type ChartData = {
@@ -35,6 +42,9 @@ const describeArc = (
   startAngle: number,
   endAngle: number
 ) => {
+  if (startAngle === 0 && endAngle === 360) {
+    return `M ${x},${y} m ${radius}, 0 a ${radius},${radius} 0 1,0 -${2 * radius},0 a ${radius},${radius} 0 1,0 ${2 * radius},0`;
+  }
   const start = polarToCartesian(x, y, radius, endAngle);
   const end = polarToCartesian(x, y, radius, startAngle);
   const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
@@ -50,13 +60,15 @@ const MemoizedPath = React.memo(({
   color,
   strokeWidth,
   opacity,
-  onPress
+  onPress,
+  accessibilityLabel
 }: {
   path: string;
   color: string;
   strokeWidth: number;
   opacity: number;
   onPress: () => void;
+  accessibilityLabel: string;
 }) => (
   <Path
     d={path}
@@ -66,30 +78,38 @@ const MemoizedPath = React.memo(({
     strokeLinecap="butt"
     opacity={opacity}
     onPress={onPress}
+    accessible
+    accessibilityLabel={accessibilityLabel}
   />
 ));
 
-const RingChart: React.FC<Props> = ({ 
-  data, 
-  size = 220, 
-  strokeWidth = 60, // Increased thickness
-  onSegmentPress 
+const RingChart: React.FC<Props> = ({
+  data,
+  size = 220,
+  strokeWidth = 60,
+  onSegmentPress
 }) => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Pre-calculate all expensive computations
+  useEffect(() => {
+    if (data.length > 0) {
+      setIsLoading(false);
+    }
+  }, [data]);
+
   const { total, radius, center, chartSegments } = useMemo(() => {
     const totalValue = data.reduce((sum, d) => sum + d.value, 0);
     const chartRadius = (size - strokeWidth) / 2.5;
     const chartCenter = size / 2;
-    
+
     let cumulativeAngle = 0;
     const segments = data.map((item) => {
       const valueAngle = (item.value / totalValue) * 360;
       const startAngle = cumulativeAngle;
       const endAngle = cumulativeAngle + valueAngle;
       cumulativeAngle += valueAngle;
+
       return {
         ...item,
         path: describeArc(0, 0, chartRadius, startAngle, endAngle),
@@ -100,15 +120,9 @@ const RingChart: React.FC<Props> = ({
       total: totalValue,
       radius: chartRadius,
       center: chartCenter,
-      chartSegments: segments
+      chartSegments: segments,
     };
   }, [data, size, strokeWidth]);
-
-  useEffect(() => {
-    // Simulate loading for complex charts
-    const timer = setTimeout(() => setIsLoading(false), 100);
-    return () => clearTimeout(timer);
-  }, []);
 
   if (isLoading) {
     return (
@@ -120,10 +134,7 @@ const RingChart: React.FC<Props> = ({
 
   return (
     <View style={styles.container}>
-      <Pressable
-        onPressIn={() => setActiveIndex(null)}
-        style={styles.chartContainer}
-      >
+      <Pressable onPressIn={() => setActiveIndex(null)} style={styles.chartContainer}>
         <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
           <G x={center} y={center}>
             <Circle
@@ -135,19 +146,26 @@ const RingChart: React.FC<Props> = ({
               fill="transparent"
             />
 
-            {chartSegments.map((seg, index) => (
-              <MemoizedPath
-                key={`${index}-${seg.key}`}
-                path={seg.path}
-                color={seg.color}
-                strokeWidth={strokeWidth}
-                opacity={activeIndex === null || activeIndex === index ? 1 : 0.5}
-                onPress={() => {
-                  setActiveIndex(prev => prev === index ? null : index);
-                  onSegmentPress?.(index, seg);
-                }}
-              />
-            ))}
+            {chartSegments.map((seg, index) => {
+              const isActive = activeIndex === index;
+              const expandedStroke = isActive ? strokeWidth + 6 : strokeWidth;
+              const opacity = activeIndex === null || isActive ? 1 : 0.4;
+
+              return (
+                <MemoizedPath
+                  key={`${index}-${seg.key}`}
+                  path={seg.path}
+                  color={seg.color}
+                  strokeWidth={expandedStroke}
+                  opacity={opacity}
+                  onPress={() => {
+                    setActiveIndex(index);
+                    onSegmentPress?.(index, seg);
+                  }}
+                  accessibilityLabel={`${seg.key}: ${Math.round(seg.value / total * 100)}%`}
+                />
+              );
+            })}
 
             <Circle
               cx={0}
@@ -161,7 +179,12 @@ const RingChart: React.FC<Props> = ({
 
       {activeIndex !== null && (
         <View style={styles.categoryContainer}>
-          <View style={[styles.colorIndicator, { backgroundColor: data[activeIndex].color }]} />
+          <View
+            style={[
+              styles.colorIndicator,
+              { backgroundColor: data[activeIndex].color },
+            ]}
+          />
           <Text style={styles.categoryText}>
             {data[activeIndex].key}: {Math.round(data[activeIndex].value / total * 100)}%
           </Text>

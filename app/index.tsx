@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { View, Text, TouchableOpacity, Dimensions, Alert, TextInput, LogBox } from "react-native";
+import { View, Text, TouchableOpacity, Dimensions, Alert, TextInput, LogBox, RefreshControl } from "react-native";
 import { useRouter } from "expo-router";
 import { AppDispatch } from "@/redux/store";
 import { Pressable, ScrollView } from "react-native-gesture-handler";
-import { PieChart } from "react-native-chart-kit";
 import CustomDropdown from "@/components/CustomDropdown";
 import { FontAwesome, FontAwesome5, Ionicons } from "@expo/vector-icons";
 import * as SecureStore from "expo-secure-store";
@@ -18,6 +17,7 @@ import { addExpenseAsync, fetchExpensesAsync } from "../redux/slices/expenseSlic
 import { fetchAnalytics } from "@/redux/slices/analyticsSlice";
 import Fab from "../components/Fab";
 import { useTheme } from "../theme/ThemeContext";
+import RingChart from "@/components/RingChart";
 
 LogBox.ignoreLogs([
   "VirtualizedLists should never be nested inside plain ScrollViews",
@@ -27,15 +27,17 @@ const screenWidth = Dimensions.get("window").width;
 
 export default function Dashboard() {
   const router = useRouter();
+  const [refreshing, setRefreshing] = useState(false);
   const modalRef = useRef<Modalize>(null);
   const [category, setCategory] = useState("");
   const [amount, setAmount] = useState("");
+  const [items, setItems] = useState<{ label: string; value: string }[]>([]);
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [access_token, setAccessToken] = useState<any>(null);
   const dispatch = useDispatch<AppDispatch>();
-  const expenses = useSelector((state: RootState) => state.expenses.expenses);
+  const { expenses, loading } = useSelector((state: RootState) => state.expenses);
   const categories = useSelector(
     (state: RootState) => state.expenses.categories
   );
@@ -48,7 +50,6 @@ export default function Dashboard() {
     const getUserDataAndExpenses = async () => {
       const userString = await SecureStore.getItemAsync("userData");
       const token = await SecureStore.getItemAsync("accessToken");
-
       if (userString) {
         const parsedUser = JSON.parse(userString);
         setUser(parsedUser);
@@ -88,59 +89,64 @@ export default function Dashboard() {
     setItems(formatted);
   }, [categories]);
 
-  const thisMonthExpenseData = useMemo(() => {
+  const onRefresh = async () => {
+    setRefreshing(true);
+    if (user?.id) {
+      await dispatch(fetchExpensesAsync(user.id));
+      await dispatch(fetchAnalytics(user.id));
+    }
+    setRefreshing(false);
+  };
+
+  const { thisMonthExpenseData, totalSpent, categoryLimitMap } = useMemo(() => {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    // Step 1: Filter expenses for current month
     const filteredExpenses = expenses.filter((expense) => {
-      const expenseDate = new Date(expense.date); // assuming expense has date
+      const expenseDate = new Date(expense.date);
       return expenseDate >= startOfMonth && expenseDate <= now;
     });
 
-    // Step 2: Create lookup for category colors
     const categoryColorMap = categories.reduce((acc, item) => {
       acc[item.category] = item.color;
       return acc;
     }, {} as Record<string, string>);
 
-    // Step 3: Sum expenses per category
-    const categoryTotals: Record<string, { amount: number; color: string }> =
-      {};
+    const categoryLimitMap = categories.reduce((acc, item) => {
+      acc[item.category] = item.limit;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const categoryTotals: Record<string, { amount: number; color: string }> = {};
 
     filteredExpenses.forEach((expense) => {
       const { category, amount } = expense;
-
       if (!categoryTotals[category]) {
         categoryTotals[category] = {
           amount: 0,
-          color: categoryColorMap[category] || "#ccc", // fallback color
+          color: categoryColorMap[category] || "#ccc",
         };
       }
       categoryTotals[category].amount += amount;
     });
 
-    // Step 4: Format for PieChart
-    return Object.entries(categoryTotals).map(([category, data]) => ({
-      name: category,
-      amount: data.amount,
-      color: data.color,
-      legendFontColor: "#333",
-      legendFontSize: 14,
-    }));
+    const thisMonthExpenseData = Object.entries(categoryTotals).map(
+      ([category, data]) => ({
+        name: category,
+        amount: data.amount,
+        color: data.color,
+        legendFontColor: "#333",
+        legendFontSize: 14,
+      })
+    );
+
+    const totalSpent = thisMonthExpenseData.reduce(
+      (acc, item) => acc + item.amount,
+      0
+    );
+
+    return { thisMonthExpenseData, totalSpent, categoryLimitMap };
   }, [expenses, categories]);
-  console.log(thisMonthExpenseData);
-  const [items, setItems] = useState<{ label: string; value: string }[]>([]);
-
-  const categoryLimitMap = categories.reduce((acc, item) => {
-    acc[item.category] = item.limit;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const totalSpent = thisMonthExpenseData.reduce(
-    (acc, item) => acc + item.amount,
-    0
-  );
 
   const openAddExpenseModal = () => modalRef.current?.open();
   const closeAddExpenseModal = () => modalRef.current?.close();
@@ -182,58 +188,51 @@ export default function Dashboard() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Hi, {user?.name} 👋</Text>
-        <TouchableOpacity onPress={() => router.push("/profile")}>
-          <Ionicons
-            name="person-circle-outline"
-            size={38}
-            color={isDark ? "#cbd5e1" : "#333"}
-          />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.userSummaryContainer}>
-        <View style={styles.summaryRow}>
-          <Text style={styles.totalSpentLabel}>Total Spent This Month</Text>
-          <Text style={styles.totalSpentAmount}>₹{totalSpent}</Text>
-        </View>
-      </View>
-
-      {/* Pie Chart
-      <View style={styles.piechart}>
-        {thisMonthExpenseData.length > 0 ? (
-          <>
-            <PieChart
-              data={thisMonthExpenseData}
-              width={screenWidth}
-              height={220}
-              chartConfig={{
-                backgroundColor: "#fff",
-                backgroundGradientFrom: "#fff",
-                backgroundGradientTo: "#fff",
-                color: () => (isDark ? "#cbd5e1" : "#333"),
-              }}
-              accessor="amount"
-              backgroundColor="transparent"
-              paddingLeft="15"
+      {/* RefreshControl wrapping the entire page */}
+      <RefreshControl
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+        tintColor="#888"
+        colors={['#4e9bde']}
+        style={{ flex: 1 }}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Hi, {user?.name} 👋</Text>
+          <TouchableOpacity onPress={() => router.push("/profile")}>
+            <Ionicons
+              name="person-circle-outline"
+              size={38}
+              color={isDark ? "#cbd5e1" : "#333"}
             />
-            <TouchableOpacity
-              onPress={() => router.push("/analytics")}
-              activeOpacity={0.7}
-            >
-              <Text
-                style={{
-                  fontSize: 12,
-                  color: isDark ? "white" : "black",
-                  marginVertical: 10,
-                }}
-              >
-                View Full Analytics
-              </Text>
-            </TouchableOpacity>
-          </>
+          </TouchableOpacity>
+        </View>
+
+        {/* User Summary */}
+        <View style={styles.userSummaryContainer}>
+          <View style={styles.summaryRow}>
+            <Text style={styles.totalSpentLabel}>Total Spent This Month</Text>
+            <Text style={styles.totalSpentAmount}>₹{totalSpent}</Text>
+          </View>
+        </View>
+
+        {/* Ring Chart or Empty State */}
+        {loading ? (
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <Text style={{ fontSize: 16, color: "#666" }}>Loading expenses...</Text>
+          </View>
+        ) : thisMonthExpenseData.length > 0 ? (
+          <View style={{ alignItems: "center", justifyContent: "center" }}>
+            <RingChart
+              data={thisMonthExpenseData.map(item => ({
+                key: item.name,
+                value: item.amount,
+                color: item.color,
+              }))}
+              size={220}
+              strokeWidth={40}
+            />
+          </View>
         ) : (
           <View
             style={{
@@ -250,14 +249,12 @@ export default function Dashboard() {
               elevation: 2,
             }}
           >
-            <View>
-              <FontAwesome5
-                name="money-bill-wave"
-                size={40}
-                color="green"
-                style={{ marginBottom: 12 }}
-              />
-            </View>
+            <FontAwesome5
+              name="money-bill-wave"
+              size={40}
+              color="green"
+              style={{ marginBottom: 12 }}
+            />
             <Text
               style={{
                 fontSize: 18,
@@ -280,67 +277,10 @@ export default function Dashboard() {
             </Text>
           </View>
         )}
-      </View> */}
-      
-      {thisMonthExpenseData.length > 0 ? (
-  <View style={{ alignItems: "center", justifyContent: "center" }}>
-    <RingChart
-      data={thisMonthExpenseData.map(item => ({
-        key: item.name,
-        value: item.amount,
-        color: item.color,
-      }))}
+      </RefreshControl>
+    
 
-      size={220}
-      strokeWidth={40}
-    />
-  </View>
-) : (
-  <View
-    style={{
-      justifyContent: "center",
-      alignItems: "center",
-      marginVertical: 40,
-      padding: 20,
-      backgroundColor: "#fff",
-      borderRadius: 10,
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 2,
-    }}
-  >
-    <View>
-      <FontAwesome5
-        name="money-bill-wave"
-        size={40}
-        color="green"
-        style={{ marginBottom: 12 }}
-      />
-    </View>
-    <Text
-      style={{
-        fontSize: 18,
-        fontWeight: "500",
-        color: "#444",
-        textAlign: "center",
-      }}
-    >
-      No expenses for this month.
-    </Text>
-    <Text
-      style={{
-        fontSize: 14,
-        color: "#888",
-        marginTop: 6,
-        textAlign: "center",
-      }}
-    >
-      Try adding your first spending now!
-    </Text>
-  </View>
-)}
+
 
         
       {/* Categories */}
@@ -374,7 +314,11 @@ export default function Dashboard() {
           contentContainerStyle={{ paddingBottom: 12 }}
           style={{ marginTop: 8 }}
         >
-          {thisMonthExpenseData.length === 0 ? (
+          {loading ? (
+  <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+    <Text style={{ fontSize: 16, color: "#666" }}>Loading categories...</Text>
+  </View>
+) : thisMonthExpenseData.length === 0 ? (
             <View style={{ alignItems: "center", marginTop: 40 }}>
               <Text
                 style={{ fontSize: 16, color: "#555", textAlign: "center" }}
@@ -493,7 +437,7 @@ export default function Dashboard() {
       <Fab
         onAddExpense={openAddExpenseModal}
         onAddCategory={() => router.push("/category")}
-        goToSettings={() => router.push("/analytics")}
+        goToAnalytics={() => router.push("/analytics")}
       />
 
       {/* Bottom Sheet Modal */}
