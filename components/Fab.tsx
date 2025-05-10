@@ -68,10 +68,10 @@ const Fab: React.FC<FabProps> = ({
           android_ripple={{ color: "transparent" }}
         >
           <View style={styles.labelContainer}>
-            <Text style={styles.label}>Settings</Text>
+            <Text style={styles.label}>Analytics</Text>
           </View>
           <View style={styles.circleIcon}>
-            <Icon name="settings" size={20} color="#fff" />
+            <Icon name="analytics" size={20} color="#fff" />
           </View>
         </Pressable>
       </Animated.View>

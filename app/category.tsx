@@ -3,11 +3,12 @@ import { View, Text, TouchableOpacity, FlatList, Modal, TextInput, Alert } from 
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../redux/store";
 import { MaterialIcons } from "@expo/vector-icons";
-import styles from "../styles/category.styles";
+import categoryStyles from "../styles/category.styles";
 import * as SecureStore from "expo-secure-store";
 import { addCategoryAsync, fetchExpensesAsync, editCategoryAsync } from "../redux/slices/expenseSlice";
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from "expo-router";
+import { useTheme } from "@/theme/ThemeContext";
 
 const CATEGORY_COLORS = [
   "#FF5722", "#3F51B5", "#4CAF50", "#E91E63",
@@ -31,6 +32,9 @@ const Category = () => {
   const [user, setUser] = useState<any>(null);
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
+  const { theme } = useTheme();
+    const isDark = theme === "dark";
+    const styles = categoryStyles(isDark);
 
   useEffect(() => {
     const getUserDataAndExpenses = async () => {
@@ -103,9 +107,9 @@ const Category = () => {
   };
 
   return (
-    <View style={{ flex: 1, padding: 16 }}>
+    <View style={styles.container}>
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color="black" />
+        <Ionicons name="arrow-back" size={24} color={isDark ? "white" : "black"} />
       </TouchableOpacity>
       <Text style={styles.title}>Your Categories</Text>
 

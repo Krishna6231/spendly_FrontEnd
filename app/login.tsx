@@ -4,12 +4,10 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Keyboard,
   Dimensions,
   StatusBar,
 } from 'react-native';
@@ -19,7 +17,6 @@ import LottieView from 'lottie-react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-const { height } = Dimensions.get('window');
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -35,13 +32,22 @@ const showSnackbar = (message: string, color: string = '#000') => {
   setSnackbarVisible(true);
 };
 
+useEffect(()=>{
+    const getUU = async () => {
+      const uu = await SecureStore.getItemAsync('hasSeenLanding');
+      console.log(uu);
+    };
+
+    getUU();
+  },[]);
+
 const handleLogin = async () => {
   if (!email || !password) {
     return showSnackbar('Please fill in all fields', 'red');
   }
 
   try {
-    const response = await axios.post('http://10.142.22.27:3000/auth/login', {
+    const response = await axios.post('https://spendly-backend-5rgu.onrender.com/auth/login', {
       email,
       password,
     });
@@ -117,7 +123,6 @@ const handleLogin = async () => {
       <Snackbar
   visible={snackbarVisible}
   onDismiss={() => setSnackbarVisible(false)}
-  // duration={2000}
   style={{ backgroundColor: snackbarColor }}
 >
   {snackbarMessage}

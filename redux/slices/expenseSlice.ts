@@ -32,7 +32,7 @@ export const addCategoryAsync = createAsyncThunk(
     const access_token = await SecureStore.getItemAsync("accessToken");
     try {
       const response = await axios.post(
-        'http://10.142.22.27:3000/expense/add-category',
+        'https://spendly-backend-5rgu.onrender.com/expense/add-category',
         categoryPayload,
         {
           headers: {
@@ -54,7 +54,7 @@ export const editCategoryAsync = createAsyncThunk(
     const access_token = await SecureStore.getItemAsync("accessToken");
     try {
       const response = await axios.put(
-        'http://10.142.22.27:3000/expense/edit-category',
+        'https://spendly-backend-5rgu.onrender.com/expense/edit-category',
         payload,
         {
           headers: {
@@ -77,7 +77,7 @@ export const fetchExpensesAsync = createAsyncThunk(
     const access_token = await SecureStore.getItemAsync("accessToken");
     try {
       const response = await axios.get(
-        `http://10.142.22.27:3000/expense/user?userid=${userId}`,
+        `https://spendly-backend-5rgu.onrender.com/expense/user?userid=${userId}`,
         {
           headers: {
             Authorization: `Bearer ${access_token}`,
@@ -98,7 +98,7 @@ export const addExpenseAsync = createAsyncThunk(
     const access_token = await SecureStore.getItemAsync("accessToken");
     try {
       const response = await axios.post(
-        'http://10.142.22.27:3000/expense/add',
+        'https://spendly-backend-5rgu.onrender.com/expense/add',
         expensePayload,
         {
           headers: {
@@ -122,7 +122,7 @@ export const deleteExpenseAsync = createAsyncThunk(
     const access_token = await SecureStore.getItemAsync("accessToken");
     try {
       await axios.delete(
-        `http://10.142.22.27:3000/expense/delete?expenseId=${payload.expenseId}&userId=${payload.userId}`,
+        `https://spendly-backend-5rgu.onrender.com/expense/delete?expenseId=${payload.expenseId}&userId=${payload.userId}`,
         {
           headers: {
             Authorization: `Bearer ${access_token}`,

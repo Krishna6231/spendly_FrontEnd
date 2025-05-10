@@ -8,31 +8,31 @@ import {
   Alert,
   Animated,
 } from "react-native";
-import { styles } from "@/styles/profile.styles";
+import { profileStyles } from "@/styles/profile.styles";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import * as SecureStore from "expo-secure-store";
 import axios from "axios";
 import { useRouter } from "expo-router";
+import { useTheme } from "@/theme/ThemeContext";
 
 const Profile = () => {
   const [user, setUser] = useState<any>(null);
   const router = useRouter();
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const animatedValue = useRef(new Animated.Value(0)).current;
+  const { theme, toggleTheme } = useTheme();
+
+  const isDark = theme === 'dark';
+  const styles = profileStyles(isDark);
 
   useEffect(() => {
     Animated.spring(animatedValue, {
-      toValue: isDarkMode ? 1 : 0,
+      toValue: isDark ? 1 : 0,
       useNativeDriver: false,
       stiffness: 100, // How "stiff" the spring is (higher = faster snap)
       damping: 13, // How much it resists oscillation (lower = more bouncy)
       mass: 1, // How "heavy" the object feels
     }).start();
-  }, [isDarkMode]);
-
-  const toggleSwitch = () => {
-    setIsDarkMode((prev) => !prev);
-  };
+  }, [isDark]);
 
   const translateX = animatedValue.interpolate({
     inputRange: [0, 1],
@@ -56,7 +56,7 @@ const Profile = () => {
       const refreshToken = await SecureStore.getItemAsync("refreshToken");
 
       if (refreshToken) {
-        await axios.post("http://10.142.22.27:3000/auth/logout", {
+        await axios.post("https://spendly-backend-5rgu.onrender.com/auth/logout", {
           refreshToken,
         });
       }
@@ -64,7 +64,7 @@ const Profile = () => {
       await SecureStore.deleteItemAsync("authToken");
       await SecureStore.deleteItemAsync("refreshToken");
       await SecureStore.deleteItemAsync("userData");
-      await SecureStore.setItemAsync('hasLaunched','false');
+
       router.replace("/login");
     } catch (error) {
       console.error("Error during logout:", error);
@@ -75,7 +75,7 @@ const Profile = () => {
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color="black" />
+        <Ionicons name="arrow-back" size={24} color={isDark ? "white" : "#4b5563"} />
       </TouchableOpacity>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* User Info Section */}
@@ -92,7 +92,7 @@ const Profile = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account</Text>
           <TouchableOpacity style={styles.row}>
-            <Feather name="user" size={20} color="#4b5563" />
+            <Feather name="user" size={20} color={isDark ? "white" : "#4b5563"} />
             <Text style={styles.rowText}>Edit Profile</Text>
           </TouchableOpacity>
         </View>
@@ -101,26 +101,26 @@ const Profile = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>App Settings</Text>
           <TouchableOpacity style={styles.row}>
-            <Feather name="list" size={20} color="#4b5563" />
+            <Feather name="list" size={20} color={isDark ? "white" : "#4b5563"} />
             <Text style={styles.rowText}>Manage Categories</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.row}>
-            <Feather name="dollar-sign" size={20} color="#4b5563" />
+            <Feather name="dollar-sign" size={20} color={isDark ? "white" : "#4b5563"} />
             <Text style={styles.rowText}>Currency: ₹</Text>
           </TouchableOpacity>
           <View style={styles.rowBetween}>
             <View style={styles.row}>
-              <Feather name="sun" size={20} color="#4b5563" />
+              <Feather name="sun" size={20} color={isDark ? "white" : "#4b5563"} />
               <Text style={styles.rowText}>Theme</Text>
             </View>
 
             <TouchableOpacity
               style={[
                 styles.toggleOuter,
-                { backgroundColor: isDarkMode ? "#1f2937" : "#e5e7eb" },
+                { backgroundColor: isDark ? "#1f2937" : "#e5e7eb" },
               ]}
               activeOpacity={0.8}
-              onPress={toggleSwitch}
+              onPress={toggleTheme}
             >
               {/* Sliding Thumb */}
               <Animated.View
@@ -128,11 +128,11 @@ const Profile = () => {
                   styles.toggleThumb,
                   {
                     transform: [{ translateX }],
-                    shadowColor: isDarkMode ? "#fff" : "#000",
+                    shadowColor: isDark ? "#fff" : "#000",
                   },
                 ]}
               >
-                {isDarkMode ? (
+                {isDark ? (
                   <Feather name="moon" size={14} color="#1f2937" />
                 ) : (
                   <Feather name="sun" size={14} color="#f59e0b" />
@@ -145,14 +145,14 @@ const Profile = () => {
                   style={[
                     styles.toggleText,
                     {
-                      color: isDarkMode ? "#9ca3af" : "#111827",
-                      textAlign: isDarkMode ? "left" : "right",
-                      paddingLeft: isDarkMode ? 10 : 0,
-                      paddingRight: isDarkMode ? 0 : 10,
+                      color: isDark ? "#9ca3af" : "#111827",
+                      textAlign: isDark ? "left" : "right",
+                      paddingLeft: isDark ? 10 : 0,
+                      paddingRight: isDark ? 0 : 10,
                     },
                   ]}
                 >
-                  {isDarkMode ? "Dark" : "Light"}
+                  {isDark ? "Dark" : "Light"}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -163,7 +163,7 @@ const Profile = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Notifications</Text>
           <TouchableOpacity style={styles.row}>
-            <Feather name="bell" size={20} color="#4b5563" />
+            <Feather name="bell" size={20} color={isDark ? "white" : "#4b5563"} />
             <Text style={styles.rowText}>Spending Alerts</Text>
           </TouchableOpacity>
         </View>
@@ -172,15 +172,15 @@ const Profile = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>About</Text>
           <TouchableOpacity style={styles.row}>
-            <Feather name="lock" size={20} color="#4b5563" />
+            <Feather name="lock" size={20} color={isDark ? "white" : "#4b5563"} />
             <Text style={styles.rowText}>Privacy Policy</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.row}>
-            <Feather name="file-text" size={20} color="#4b5563" />
+            <Feather name="file-text" size={20} color={isDark ? "white" : "#4b5563"} />
             <Text style={styles.rowText}>Terms and Conditions</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.row}>
-            <Feather name="info" size={20} color="#4b5563" />
+            <Feather name="info" size={20} color={isDark ? "white" : "#4b5563"} />
             <Text style={styles.rowText}>Version 1.0.0</Text>
           </TouchableOpacity>
         </View>

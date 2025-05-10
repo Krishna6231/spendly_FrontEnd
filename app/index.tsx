@@ -1,17 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Dimensions,
-  Alert,
-  TextInput,
-  LogBox,
-} from "react-native";
+import { View, Text, TouchableOpacity, Dimensions, Alert, TextInput, LogBox } from "react-native";
 import { useRouter } from "expo-router";
 import { AppDispatch } from "@/redux/store";
 import { Pressable, ScrollView } from "react-native-gesture-handler";
-import { useNavigation } from "@react-navigation/native";
 import { PieChart } from "react-native-chart-kit";
 import CustomDropdown from "@/components/CustomDropdown";
 import { FontAwesome, FontAwesome5, Ionicons } from "@expo/vector-icons";
@@ -20,16 +11,13 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { Modalize } from "react-native-modalize";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import styles from "@/styles/index.styles";
+import indexStyles from "@/styles/index.styles";
 import { Animated } from "react-native";
 import { useDispatch } from "react-redux";
-import {
-  addExpenseAsync,
-  fetchExpensesAsync,
-} from "../redux/slices/expenseSlice";
+import { addExpenseAsync, fetchExpensesAsync } from "../redux/slices/expenseSlice";
 import { fetchAnalytics } from "@/redux/slices/analyticsSlice";
 import Fab from "../components/Fab";
-import RingChart from "@/components/RingChart";
+import { useTheme } from "../theme/ThemeContext";
 
 LogBox.ignoreLogs([
   "VirtualizedLists should never be nested inside plain ScrollViews",
@@ -52,7 +40,9 @@ export default function Dashboard() {
     (state: RootState) => state.expenses.categories
   );
   const blinkingBorder = useRef(new Animated.Value(0)).current;
-  const navigation = useNavigation();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const styles = indexStyles(isDark);
 
   useEffect(() => {
     const getUserDataAndExpenses = async () => {
@@ -196,7 +186,11 @@ export default function Dashboard() {
       <View style={styles.header}>
         <Text style={styles.title}>Hi, {user?.name} 👋</Text>
         <TouchableOpacity onPress={() => router.push("/profile")}>
-          <Ionicons name="person-circle-outline" size={38} color="#333" />
+          <Ionicons
+            name="person-circle-outline"
+            size={38}
+            color={isDark ? "#cbd5e1" : "#333"}
+          />
         </TouchableOpacity>
       </View>
 
@@ -210,20 +204,36 @@ export default function Dashboard() {
       {/* Pie Chart
       <View style={styles.piechart}>
         {thisMonthExpenseData.length > 0 ? (
-          <PieChart
-            data={thisMonthExpenseData}
-            width={screenWidth}
-            height={220}
-            chartConfig={{
-              backgroundColor: "#fff",
-              backgroundGradientFrom: "#fff",
-              backgroundGradientTo: "#fff",
-              color: () => '#333',
-            }}
-            accessor="amount"
-            backgroundColor="transparent"
-            paddingLeft="15"
-          />
+          <>
+            <PieChart
+              data={thisMonthExpenseData}
+              width={screenWidth}
+              height={220}
+              chartConfig={{
+                backgroundColor: "#fff",
+                backgroundGradientFrom: "#fff",
+                backgroundGradientTo: "#fff",
+                color: () => (isDark ? "#cbd5e1" : "#333"),
+              }}
+              accessor="amount"
+              backgroundColor="transparent"
+              paddingLeft="15"
+            />
+            <TouchableOpacity
+              onPress={() => router.push("/analytics")}
+              activeOpacity={0.7}
+            >
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: isDark ? "white" : "black",
+                  marginVertical: 10,
+                }}
+              >
+                View Full Analytics
+              </Text>
+            </TouchableOpacity>
+          </>
         ) : (
           <View
             style={{
@@ -352,7 +362,7 @@ export default function Dashboard() {
             <FontAwesome
               name="history"
               size={16}
-              color="black"
+              color={isDark ? "#cbd5e1" : "#333"}
               style={{ marginRight: 4, marginBottom: 10 }}
             />
             <Text style={[styles.sectionTitle, { fontSize: 16 }]}>History</Text>
@@ -497,11 +507,18 @@ export default function Dashboard() {
           scrollEnabled: true,
         }}
       >
-        <View style={{ padding: 20 }}>
+        <View
+          style={{ padding: 20, backgroundColor: isDark ? "#11151e" : "white" }}
+        >
           <Text style={styles.sectionTitle}>Add Expense</Text>
 
           <Text style={styles.inputLabel}>Category</Text>
-          <View style={{ zIndex: 1000 }}>
+          <View
+            style={{
+              zIndex: 1000,
+              backgroundColor: isDark ? "#11151e" : "white",
+            }}
+          >
             <CustomDropdown
               items={items}
               selectedValue={category}
@@ -513,6 +530,7 @@ export default function Dashboard() {
           <TextInput
             keyboardType="numeric"
             placeholder="Enter amount"
+            placeholderTextColor={isDark ? "white" : "black"}
             value={amount}
             onChangeText={(text) => setAmount(text.replace(/[^0-9]/g, ""))}
             style={styles.input}
@@ -531,6 +549,7 @@ export default function Dashboard() {
               value={date}
               mode="date"
               display="default"
+              themeVariant={isDark ? "dark" : "light"}
               onChange={(event, selectedDate) => {
                 const currentDate = selectedDate || date;
                 setDate(currentDate);

@@ -12,6 +12,8 @@ import Animated, {
 import * as SecureStore from "expo-secure-store";
 import { deleteExpenseAsync } from '@/redux/slices/expenseSlice';
 import { ThunkDispatch } from '@reduxjs/toolkit';
+import allExpensesStyles from '@/styles/allExpenses.styles';
+import { useTheme } from '@/theme/ThemeContext';
 
 // Typing the dispatch as ThunkDispatch
 const ExpenseItem = ({ item }: { item: any }) => {
@@ -20,6 +22,9 @@ const ExpenseItem = ({ item }: { item: any }) => {
   const contentOffset = useSharedValue(0);
   const dispatch = useDispatch<ThunkDispatch<RootState, unknown, any>>();
   const [user, setUser] = useState<any>(null);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const styles = allExpensesStyles(isDark);
 
   const animatedDeleteStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: deleteOffset.value }],
@@ -126,7 +131,7 @@ const ExpenseItem = ({ item }: { item: any }) => {
       <View style={styles.expenseCard}>
         <View style={styles.expenseRow}>
           <Text style={styles.amountText}>₹{item.amount}</Text>
-          <Animated.View style={[styles.categoryWrapper, animatedContentStyle]}>
+          <Animated.View style={[animatedContentStyle]}>
             <Text style={styles.categoryText}>{item.category}</Text>
           </Animated.View>
         </View>
@@ -145,6 +150,9 @@ const ExpenseItem = ({ item }: { item: any }) => {
 const History = () => {
   const expenses = useSelector((state: RootState) => state.expenses.expenses);
   const router = useRouter();
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === 'dark';
+  const styles = allExpensesStyles(isDark);
 
   const sortedExpenses = [...expenses].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -153,7 +161,7 @@ const History = () => {
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color="black" />
+        <Ionicons name="arrow-back" size={24} color={isDark ? "white" : "#4b5563"} />
       </TouchableOpacity>
 
       <Text style={styles.title}>History</Text>
@@ -170,99 +178,5 @@ const History = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    flex: 1,
-    backgroundColor: "#f9f9f9",
-  },
-  backButton: {
-    position: "fixed",
-    top: 16,
-    left: 16,
-    zIndex: 1,
-    padding: 8,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginTop: 5,
-    marginBottom: 15,
-    color: "#333",
-    textAlign: "center",
-  },
-  expenseCard: {
-    backgroundColor: "#fff",
-    padding: 15,
-    marginVertical: 8,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#eee",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 5,
-    elevation: 2,
-    position: 'relative',
-    overflow: 'visible', // Add this to ensure trash icon isn't clipped
-  },
-  expenseRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  amountText: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#4CAF50",
-  },
-  categoryText: {
-    fontSize: 18, // increased by 2 points
-    color: "#000", // changed to black
-    marginTop: 10, // pushes it slightly down
-  },
-  dateText: {
-    fontSize: 14,
-    color: "#888",
-    marginTop: 4,
-  },
-  noExpensesText: {
-    fontSize: 16,
-    color: "#999",
-    textAlign: "center",
-    marginTop: 20,
-  },
-  deleteButton: {
-    position: 'absolute',
-    right: 15, // Increased from 10 to 15 for better visibility
-    top: '50%',
-    transform: [{ translateY: -20 }],
-    backgroundColor: '#e53935',
-    borderRadius: 20,
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOpacity: 0.3, // Increased opacity
-    shadowOffset: { width: 1, height: 2 },
-    shadowRadius: 4,
-    zIndex: 1, // Ensure it's above other elements
-  },
-  deleteTouchable: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  categoryWrapper: {
-    justifyContent: 'center',
-    marginRight: 20, // ensures space between category and delete icon
-  },
-
-
-});
 
 export default History;

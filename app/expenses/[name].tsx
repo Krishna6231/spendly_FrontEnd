@@ -1,14 +1,19 @@
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, FlatList, TouchableOpacity } from "react-native";
 import React from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { Ionicons } from '@expo/vector-icons'; // Import Ionicons for the back arrow
+import catExpensesStyles from "@/styles/catExpenses.styles";
+import { useTheme } from '@/theme/ThemeContext';
 
 const AllExpenses = () => {
   const expenses = useSelector((state: RootState) => state.expenses.expenses);
   const { name } = useLocalSearchParams();
   const router = useRouter(); 
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const styles = catExpensesStyles(isDark);
 
   const filteredAndSortedExpenses = expenses
     .filter((expense) => expense.category === name)
@@ -67,7 +72,7 @@ const AllExpenses = () => {
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color="black" />
+        <Ionicons name="arrow-back" size={24} color={isDark ? "white" : "#4b5563"} />
       </TouchableOpacity>
 
       <Text style={styles.title}>All Expenses of {name}</Text>
@@ -102,69 +107,5 @@ const AllExpenses = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    flex: 1,
-    backgroundColor: "#f9f9f9",
-  },
-  backButton: {
-    position: "absolute",
-    top: 16,
-    left: 16,
-    zIndex: 1,
-    padding: 8,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginTop: 5,
-    marginBottom: 15,
-    color: "#333",
-    textAlign: "center",
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#555",
-    marginTop: 20,
-    marginBottom: 8,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: "#ddd",
-    marginBottom: 12,
-  },
-  expenseCard: {
-    backgroundColor: "#fff",
-    padding: 15,
-    marginVertical: 8,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#eee",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 5,
-    elevation: 2,
-  },
-  amountText: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#4CAF50",
-  },
-  dateText: {
-    fontSize: 14,
-    color: "#888",
-    marginTop: 4,
-  },
-  noExpensesText: {
-    fontSize: 16,
-    color: "#999",
-    textAlign: "center",
-    marginTop: 20,
-  },
-});
 
 export default AllExpenses;

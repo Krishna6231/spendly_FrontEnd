@@ -3,13 +3,13 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ScrollView,
   Animated,
   StyleSheet,
   Dimensions,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { FlatList } from "react-native-gesture-handler";
+import { useTheme } from "@/theme/ThemeContext";
 
 type DropdownItem = {
   label: string;
@@ -31,6 +31,10 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const animatedHeight = useRef(new Animated.Value(0)).current;
+
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === 'dark';
+  const styles = CDDstyles(isDark);
 
   const toggleDropdown = () => {
     if (isOpen) {
@@ -57,8 +61,8 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
   return (
     <View style={styles.wrapper}>
       <TouchableOpacity style={styles.selector} onPress={toggleDropdown}>
-        <Text>{selectedValue || "Select a category"}</Text>
-        <AntDesign name={isOpen ? "up" : "down"} size={16} />
+        <Text style={{color: isDark ? "white" : "black",}}>{selectedValue || "Select a category"}</Text>
+        <AntDesign name={isOpen ? "up" : "down"} size={16} color={isDark ? "white" : "black"}/>
       </TouchableOpacity>
 
       {isOpen && (
@@ -71,7 +75,7 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
               style={styles.item}
               onPress={() => handleSelect(item)}
             >
-              <Text>{item.label}</Text>
+              <Text style={{color: isDark ? "white" : "black",}}>{item.label}</Text>
             </TouchableOpacity>
           )}
           nestedScrollEnabled
@@ -86,10 +90,11 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const CDDstyles = (isDark : boolean) => StyleSheet.create({
   wrapper: {
     marginBottom: 10,
     zIndex: 10,
+    color: isDark ? "white" : "black",
   },
   selector: {
     flexDirection: "row",
@@ -97,25 +102,28 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 12,
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: isDark ? "#475569" : "#ccc",
     borderRadius: 8,
-    backgroundColor: "#fff",
+    backgroundColor: isDark ? "transparent" : "#fff",
+    color: isDark ? "white" : "black",
   },
   dropdown: {
     position: "absolute",
     top: 50, // adjust based on your selector height
     width: "100%",
-    backgroundColor: "#fff",
+    backgroundColor: isDark ? "#11151e" : "#fff",
     borderWidth: 1,
-    borderColor: "#ccc",
+    color: isDark ? "white" : "black",
+    borderColor: isDark ? "#475569" : "#ccc",
     borderRadius: 8,
     overflow: "hidden",
     zIndex: 1000,
   },
   item: {
     padding: 12,
+    color: isDark ? "white" : "black",
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    borderBottomColor: isDark ? "#333" : "#eee",
   },
 });
 
