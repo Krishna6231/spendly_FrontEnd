@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { View, Text, TouchableOpacity, Dimensions, Alert, TextInput, LogBox, RefreshControl } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Dimensions,
+  Alert,
+  TextInput,
+  LogBox,
+  RefreshControl,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { AppDispatch } from "@/redux/store";
 import { Pressable, ScrollView } from "react-native-gesture-handler";
@@ -13,7 +22,10 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import indexStyles from "@/styles/index.styles";
 import { Animated } from "react-native";
 import { useDispatch } from "react-redux";
-import { addExpenseAsync, fetchExpensesAsync } from "../redux/slices/expenseSlice";
+import {
+  addExpenseAsync,
+  fetchExpensesAsync,
+} from "../redux/slices/expenseSlice";
 import { fetchAnalytics } from "@/redux/slices/analyticsSlice";
 import Fab from "../components/Fab";
 import { useTheme } from "../theme/ThemeContext";
@@ -37,7 +49,9 @@ export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
   const [access_token, setAccessToken] = useState<any>(null);
   const dispatch = useDispatch<AppDispatch>();
-  const { expenses, loading } = useSelector((state: RootState) => state.expenses);
+  const { expenses, loading } = useSelector(
+    (state: RootState) => state.expenses
+  );
   const categories = useSelector(
     (state: RootState) => state.expenses.categories
   );
@@ -117,7 +131,8 @@ export default function Dashboard() {
       return acc;
     }, {} as Record<string, number>);
 
-    const categoryTotals: Record<string, { amount: number; color: string }> = {};
+    const categoryTotals: Record<string, { amount: number; color: string }> =
+      {};
 
     filteredExpenses.forEach((expense) => {
       const { category, amount } = expense;
@@ -193,7 +208,7 @@ export default function Dashboard() {
         refreshing={refreshing}
         onRefresh={onRefresh}
         tintColor="#888"
-        colors={['#4e9bde']}
+        colors={["#4e9bde"]}
         style={{ flex: 1 }}
       >
         {/* Header */}
@@ -218,13 +233,17 @@ export default function Dashboard() {
 
         {/* Ring Chart or Empty State */}
         {loading ? (
-          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-            <Text style={{ fontSize: 16, color: "#666" }}>Loading expenses...</Text>
+          <View
+            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+          >
+            <Text style={{ fontSize: 16, color: "#666" }}>
+              Loading expenses...
+            </Text>
           </View>
         ) : thisMonthExpenseData.length > 0 ? (
           <View style={{ alignItems: "center", justifyContent: "center" }}>
             <RingChart
-              data={thisMonthExpenseData.map(item => ({
+              data={thisMonthExpenseData.map((item) => ({
                 key: item.name,
                 value: item.amount,
                 color: item.color,
@@ -278,11 +297,7 @@ export default function Dashboard() {
           </View>
         )}
       </RefreshControl>
-    
 
-
-
-        
       {/* Categories */}
       <View style={styles.categoryCard}>
         <View
@@ -315,10 +330,18 @@ export default function Dashboard() {
           style={{ marginTop: 8 }}
         >
           {loading ? (
-  <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-    <Text style={{ fontSize: 16, color: "#666" }}>Loading categories...</Text>
-  </View>
-) : thisMonthExpenseData.length === 0 ? (
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Text style={{ fontSize: 16, color: "#666" }}>
+                Loading categories...
+              </Text>
+            </View>
+          ) : thisMonthExpenseData.length === 0 ? (
             <View style={{ alignItems: "center", marginTop: 40 }}>
               <Text
                 style={{ fontSize: 16, color: "#555", textAlign: "center" }}
@@ -364,7 +387,7 @@ export default function Dashboard() {
                     <Animated.View
                       style={[
                         {
-                          borderWidth: 1.5,
+                          borderWidth: 0,
                           borderRadius: 10,
                           padding: 10,
                           marginVertical: 8,
@@ -376,7 +399,7 @@ export default function Dashboard() {
                             inputRange: [0, 1],
                             outputRange: [0, 10],
                           }),
-                          backgroundColor: "#fff",
+                          backgroundColor: isDark ? "#4e5971" : "#fff",
                           elevation:
                             percentage >= 70
                               ? blinkingBorder.interpolate({
@@ -390,11 +413,24 @@ export default function Dashboard() {
                       {/* Top Row */}
                       <View style={styles.cat_top_row}>
                         <View>
-                          <Text style={{ fontSize: 16, fontWeight: "600" }}>
+                          <Text
+                            style={{
+                              fontSize: 16,
+                              fontWeight: "600",
+                              color: isDark ? "#cbd5e1" : "black",
+                            }}
+                          >
                             {item.name}
                           </Text>
                         </View>
-                        <Text style={{ fontSize: 16 }}>₹{item.amount}</Text>
+                        <Text
+                          style={{
+                            fontSize: 16,
+                            color: isDark ? "#cbd5e1" : "black",
+                          }}
+                        >
+                          ₹{item.amount}
+                        </Text>
                       </View>
 
                       {/* Progress Bar */}
@@ -420,7 +456,11 @@ export default function Dashboard() {
                         </Text>
                       ) : (
                         <Text
-                          style={{ marginTop: 4, fontSize: 12, color: "#666" }}
+                          style={{
+                            marginTop: 4,
+                            fontSize: 12,
+                            color: isDark ? "#cbd5e1" : "#666",
+                          }}
                         >
                           Limit: ₹{limit} ({Math.floor(percentage)}%)
                         </Text>

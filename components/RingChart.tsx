@@ -1,13 +1,17 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import { useTheme } from '@/theme/ThemeContext';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Pressable,
   ActivityIndicator,
-  Animated,
+  FlatList,
+  Dimensions,
 } from 'react-native';
 import Svg, { G, Circle, Path } from 'react-native-svg';
+
+const screenWidth = Dimensions.get("window").width;
 
 type ChartData = {
   key: string;
@@ -91,6 +95,10 @@ const RingChart: React.FC<Props> = ({
 }) => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const listRef = useRef<FlatList>(null);
+
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   useEffect(() => {
     if (data.length > 0) {
@@ -124,6 +132,16 @@ const RingChart: React.FC<Props> = ({
     };
   }, [data, size, strokeWidth]);
 
+  const handleSegmentPress = (index: number) => {
+    setActiveIndex(index);
+    onSegmentPress?.(index, chartSegments[index]);
+    listRef.current?.scrollToIndex({
+      index,
+      animated: true,
+      viewPosition: 0.5,
+    });
+  };
+
   if (isLoading) {
     return (
       <View style={[styles.container, styles.loadingContainer]}>
@@ -134,7 +152,10 @@ const RingChart: React.FC<Props> = ({
 
   return (
     <View style={styles.container}>
-      <Pressable onPressIn={() => setActiveIndex(null)} style={styles.chartContainer}>
+      <Pressable
+        onPressIn={() => setActiveIndex(null)}
+        style={styles.chartContainer}
+      >
         <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
           <G x={center} y={center}>
             <Circle
@@ -158,10 +179,7 @@ const RingChart: React.FC<Props> = ({
                   color={seg.color}
                   strokeWidth={expandedStroke}
                   opacity={opacity}
-                  onPress={() => {
-                    setActiveIndex(index);
-                    onSegmentPress?.(index, seg);
-                  }}
+                  onPress={() => handleSegmentPress(index)}
                   accessibilityLabel={`${seg.key}: ${Math.round(seg.value / total * 100)}%`}
                 />
               );
@@ -171,25 +189,37 @@ const RingChart: React.FC<Props> = ({
               cx={0}
               cy={0}
               r={radius - strokeWidth / 2}
-              fill="white"
+              fill={isDark ? "black" : "white"}
             />
           </G>
         </Svg>
       </Pressable>
 
-      {activeIndex !== null && (
-        <View style={styles.categoryContainer}>
-          <View
-            style={[
-              styles.colorIndicator,
-              { backgroundColor: data[activeIndex].color },
-            ]}
-          />
-          <Text style={styles.categoryText}>
-            {data[activeIndex].key}: {Math.round(data[activeIndex].value / total * 100)}%
-          </Text>
-        </View>
-      )}
+      <FlatList
+        ref={listRef}
+        data={chartSegments}
+        horizontal
+        keyExtractor={(item, index) => `${index}-${item.key}`}
+        showsHorizontalScrollIndicator={false}
+        style={{width: screenWidth}}
+        contentContainerStyle={styles.categoryScrollContainer}
+        renderItem={({ item, index }) => {
+          const isActive = index === activeIndex;
+          return (
+            <View style={[styles.categoryItem, isActive && styles.activeItem]}>
+              <View
+                style={[
+                  styles.squareColor,
+                  { backgroundColor: item.color },
+                ]}
+              />
+              <Text style={styles.label}>
+                {item.key}: {Math.round(item.value / total * 100)}%
+              </Text>
+            </View>
+          );
+        }}
+      />
     </View>
   );
 };
@@ -198,7 +228,7 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
+    paddingVertical: 10,
   },
   loadingContainer: {
     height: 300,
@@ -207,23 +237,36 @@ const styles = StyleSheet.create({
   chartContainer: {
     position: 'relative',
   },
-  categoryContainer: {
+  categoryScrollContainer: {
+    marginTop: 5,
+    paddingHorizontal: 10,
+    justifyContent: 'center',
+  },
+  categoryItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 20,
-    padding: 10,
-    backgroundColor: '#f8f8f8',
-    borderRadius: 8,
+    justifyContent: 'center',
+    alignSelf: 'flex-start',
+    borderRadius: 10,
+    backgroundColor: '#f0f0f0',
+    marginHorizontal: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
   },
-  colorIndicator: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+  activeItem: {
+    borderWidth: 1,
+    borderColor: '#00bcd4',
+    backgroundColor: '#e0f7fa',
+  },
+  squareColor: {
+    width: 12,
+    height: 12,
+    borderRadius: 4,
     marginRight: 8,
   },
-  categoryText: {
-    fontSize: 16,
-    fontWeight: 'bold',
+  label: {
+    fontSize: 12,
+    fontWeight: '800',
   },
 });
 
