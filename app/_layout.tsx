@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Stack, useRouter, Slot } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { ActivityIndicator, View, StyleSheet, StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -7,26 +7,32 @@ import axios from 'axios';
 import { Provider } from 'react-redux';
 import { store } from '../redux/store';
 import { ThemeProvider } from '../theme/ThemeContext';
+import base64 from 'base-64';
 
 const decodeJwt = (token: string) => {
-  const payload = token.split('.')[1];
-  const base64Url = payload.replace('-', '+').replace('_', '/'); 
-  const decodedPayload = JSON.parse(atob(base64Url));
-  return decodedPayload;
+  try {
+    const payload = token.split('.')[1];
+    const base64Url = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const decodedPayload = JSON.parse(base64.decode(base64Url));
+    return decodedPayload;
+  } catch (error) {
+    console.error(error);
+    return {};
+  }
 };
 
 const isTokenExpired = (token: string): boolean => {
-  const { exp } = decodeJwt(token); 
-  return Date.now() >= exp * 1000; 
+  const { exp } = decodeJwt(token);
+  return Date.now() >= exp * 1000;
 };
 
 export default function Layout() {
   const [isLoading, setIsLoading] = useState(true);
-  const [initialRoute, setInitialRoute] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     const checkLoginStatus = async () => {
+
       try {
         const accessToken = await SecureStore.getItemAsync('accessToken');
         const refreshToken = await SecureStore.getItemAsync('refreshToken');
@@ -46,17 +52,16 @@ export default function Layout() {
 
           if (!hasSeenLanding) {
             await SecureStore.setItemAsync('hasSeenLanding', 'true');
-            await SecureStore.setItemAsync('theme', 'light');
-            setInitialRoute('/landing');
+            router.replace('/landing');
           } else {
-            setInitialRoute('/');
+            router.replace('/');
           }
         } else {
-          setInitialRoute('/login');
+          router.replace('/login');
         }
       } catch (error) {
         console.error('Error checking login status:', error);
-        setInitialRoute('/login');
+        router.replace('/login');
       } finally {
         setIsLoading(false);
       }
@@ -65,31 +70,23 @@ export default function Layout() {
     checkLoginStatus();
   }, []);
 
-  useEffect(() => {
-    if (!isLoading && initialRoute) {
-      router.replace(initialRoute);
-    }
-  }, [isLoading, initialRoute]);
-
-  if (isLoading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
   return (
     <Provider store={store}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <ThemeProvider>
-        <StatusBar barStyle="light-content" backgroundColor="black" />
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="landing" />
-          <Stack.Screen name="login" />
-          <Stack.Screen name="signup" />
-        </Stack>
+          <StatusBar barStyle="light-content" backgroundColor="black" />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="landing" />
+            <Stack.Screen name="login" />
+          </Stack>
+
+          {isLoading && (
+            <View style={styles.loadingOverlay}>
+              <ActivityIndicator size="large" color="#000" />
+            </View>
+          )}
+
         </ThemeProvider>
       </GestureHandlerRootView>
     </Provider>
@@ -97,9 +94,11 @@ export default function Layout() {
 }
 
 const styles = StyleSheet.create({
-  centered: {
-    flex: 1,
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'white', // or dark mode base
+    zIndex: 999,
   },
 });

@@ -99,6 +99,40 @@ const indexStyles = (isDark: boolean) =>
       marginTop: 20,
     },
 
+    noexpense: {
+      fontSize: 18,
+      fontWeight: "500",
+      color: "#444",
+      textAlign: "center",
+    },
+
+    tryadd: {
+      fontSize: 14,
+      color: "#888",
+      marginTop: 6,
+      textAlign: "center",
+    },
+
+    noexpview: {
+      justifyContent: "center",
+      alignItems: "center",
+      marginVertical: 40,
+      padding: 20,
+      backgroundColor: "#fff",
+      borderRadius: 10,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+
+    ok: {
+      color: "#fff",
+      textAlign: "center",
+      fontWeight: "600",
+    },
+
     totalSpentLabel: {
       fontSize: 15,
       color: isDark ? "#cbd5e1" : "black",

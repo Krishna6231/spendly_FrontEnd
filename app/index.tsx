@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Dimensions,
   Alert,
   TextInput,
   LogBox,
@@ -11,9 +10,8 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { AppDispatch } from "@/redux/store";
-import { Pressable, ScrollView } from "react-native-gesture-handler";
 import CustomDropdown from "@/components/CustomDropdown";
-import { FontAwesome, FontAwesome5, Ionicons } from "@expo/vector-icons";
+import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import * as SecureStore from "expo-secure-store";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
@@ -22,20 +20,16 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import indexStyles from "@/styles/index.styles";
 import { Animated } from "react-native";
 import { useDispatch } from "react-redux";
-import {
-  addExpenseAsync,
-  fetchExpensesAsync,
-} from "../redux/slices/expenseSlice";
+import { addExpenseAsync, fetchExpensesAsync } from "../redux/slices/expenseSlice";
 import { fetchAnalytics } from "@/redux/slices/analyticsSlice";
 import Fab from "../components/Fab";
 import { useTheme } from "../theme/ThemeContext";
 import RingChart from "@/components/RingChart";
+import SpendingCategories from "@/components/SpendingCategories";
 
 LogBox.ignoreLogs([
   "VirtualizedLists should never be nested inside plain ScrollViews",
 ]);
-
-const screenWidth = Dimensions.get("window").width;
 
 export default function Dashboard() {
   const router = useRouter();
@@ -47,10 +41,9 @@ export default function Dashboard() {
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [user, setUser] = useState<any>(null);
-  const [access_token, setAccessToken] = useState<any>(null);
   const dispatch = useDispatch<AppDispatch>();
   const { expenses, loading } = useSelector(
-    (state: RootState) => state.expenses
+    (state: RootState) => state?.expenses
   );
   const categories = useSelector(
     (state: RootState) => state.expenses.categories
@@ -63,16 +56,11 @@ export default function Dashboard() {
   useEffect(() => {
     const getUserDataAndExpenses = async () => {
       const userString = await SecureStore.getItemAsync("userData");
-      const token = await SecureStore.getItemAsync("accessToken");
       if (userString) {
         const parsedUser = JSON.parse(userString);
         setUser(parsedUser);
         dispatch(fetchExpensesAsync(parsedUser.id));
         dispatch(fetchAnalytics(parsedUser.id));
-      }
-
-      if (token) {
-        setAccessToken(token);
       }
     };
     getUserDataAndExpenses();
@@ -131,8 +119,7 @@ export default function Dashboard() {
       return acc;
     }, {} as Record<string, number>);
 
-    const categoryTotals: Record<string, { amount: number; color: string }> =
-      {};
+    const categoryTotals: Record<string, { amount: number; color: string }> = {};
 
     filteredExpenses.forEach((expense) => {
       const { category, amount } = expense;
@@ -241,7 +228,7 @@ export default function Dashboard() {
             </Text>
           </View>
         ) : thisMonthExpenseData.length > 0 ? (
-          <View style={{ alignItems: "center", justifyContent: "center" }}>
+          <View>
             <RingChart
               data={thisMonthExpenseData.map((item) => ({
                 key: item.name,
@@ -253,225 +240,26 @@ export default function Dashboard() {
             />
           </View>
         ) : (
-          <View
-            style={{
-              justifyContent: "center",
-              alignItems: "center",
-              marginVertical: 40,
-              padding: 20,
-              backgroundColor: "#fff",
-              borderRadius: 10,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.1,
-              shadowRadius: 4,
-              elevation: 2,
-            }}
-          >
+          <View style={styles.noexpview}>
             <FontAwesome5
               name="money-bill-wave"
               size={40}
               color="green"
               style={{ marginBottom: 12 }}
             />
-            <Text
-              style={{
-                fontSize: 18,
-                fontWeight: "500",
-                color: "#444",
-                textAlign: "center",
-              }}
-            >
-              No expenses for this month.
-            </Text>
-            <Text
-              style={{
-                fontSize: 14,
-                color: "#888",
-                marginTop: 6,
-                textAlign: "center",
-              }}
-            >
-              Try adding your first spending now!
-            </Text>
+            <Text style={styles.noexpense}>No expenses for this month.</Text>
+            <Text style={styles.tryadd}>Try adding your first spending now!</Text>
           </View>
         )}
       </RefreshControl>
 
       {/* Categories */}
-      <View style={styles.categoryCard}>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Text style={styles.sectionTitle}>Spending Categories</Text>
-
-          <TouchableOpacity
-            onPress={() => router.push("/history")}
-            style={{ flexDirection: "row", alignItems: "center" }}
-            activeOpacity={0.5}
-          >
-            <FontAwesome
-              name="history"
-              size={16}
-              color={isDark ? "#cbd5e1" : "#333"}
-              style={{ marginRight: 4, marginBottom: 10 }}
-            />
-            <Text style={[styles.sectionTitle, { fontSize: 16 }]}>History</Text>
-          </TouchableOpacity>
-        </View>
-
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 12 }}
-          style={{ marginTop: 8 }}
-        >
-          {loading ? (
-            <View
-              style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Text style={{ fontSize: 16, color: "#666" }}>
-                Loading categories...
-              </Text>
-            </View>
-          ) : thisMonthExpenseData.length === 0 ? (
-            <View style={{ alignItems: "center", marginTop: 40 }}>
-              <Text
-                style={{ fontSize: 16, color: "#555", textAlign: "center" }}
-              >
-                Looks like your wallet’s been on vacation this month! 🏖️{"\n\n"}
-                No expenses yet — saving pro or just broke? 😄
-              </Text>
-            </View>
-          ) : (
-            thisMonthExpenseData
-              .map((item) => {
-                const limit = categoryLimitMap[item.name] || 0;
-                const percentage = limit > 0 ? (item.amount / limit) * 100 : 0;
-                return { ...item, percentage };
-              })
-              .sort((a, b) => b.percentage - a.percentage)
-              .map((item, index) => {
-                const limit = categoryLimitMap[item.name] || 0;
-                const isOverspent = item.amount > limit;
-                const percentage = limit > 0 ? (item.amount / limit) * 100 : 0;
-
-                let barColor = "#4CAF50"; // green by default
-                if (isOverspent) barColor = "#B71C1C";
-                else if (percentage >= 90) barColor = "#F44336"; // red
-                else if (percentage >= 70) barColor = "#FF9800"; // orange
-                else if (percentage >= 40) barColor = "#FFEB3B"; // yellow
-
-                const borderColor = blinkingBorder.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ["#ccc", barColor],
-                });
-
-                return (
-                  <Pressable
-                    key={index}
-                    onPress={() =>
-                      router.push({
-                        pathname: `/expenses/[name]`,
-                        params: { name: item.name },
-                      })
-                    }
-                  >
-                    <Animated.View
-                      style={[
-                        {
-                          borderWidth: 0,
-                          borderRadius: 10,
-                          padding: 10,
-                          marginVertical: 8,
-                          borderColor: percentage >= 70 ? borderColor : "#ccc",
-                          shadowColor: barColor,
-                          shadowOffset: { width: 0, height: 0 },
-                          shadowOpacity: blinkingBorder,
-                          shadowRadius: blinkingBorder.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [0, 10],
-                          }),
-                          backgroundColor: isDark ? "#4e5971" : "#fff",
-                          elevation:
-                            percentage >= 70
-                              ? blinkingBorder.interpolate({
-                                  inputRange: [0, 1],
-                                  outputRange: [0, 10],
-                                })
-                              : 0,
-                        },
-                      ]}
-                    >
-                      {/* Top Row */}
-                      <View style={styles.cat_top_row}>
-                        <View>
-                          <Text
-                            style={{
-                              fontSize: 16,
-                              fontWeight: "600",
-                              color: isDark ? "#cbd5e1" : "black",
-                            }}
-                          >
-                            {item.name}
-                          </Text>
-                        </View>
-                        <Text
-                          style={{
-                            fontSize: 16,
-                            color: isDark ? "#cbd5e1" : "black",
-                          }}
-                        >
-                          ₹{item.amount}
-                        </Text>
-                      </View>
-
-                      {/* Progress Bar */}
-                      <View style={styles.progressBarOut}>
-                        <View
-                          style={{
-                            width: `${Math.min(percentage, 100)}%`,
-                            backgroundColor: barColor,
-                            height: "100%",
-                            borderRadius: 5,
-                          }}
-                        />
-                      </View>
-                      {isOverspent ? (
-                        <Text
-                          style={{
-                            marginTop: 4,
-                            fontSize: 12,
-                            color: "#B71C1C",
-                          }}
-                        >
-                          Whoa! You overspent 🚨
-                        </Text>
-                      ) : (
-                        <Text
-                          style={{
-                            marginTop: 4,
-                            fontSize: 12,
-                            color: isDark ? "#cbd5e1" : "#666",
-                          }}
-                        >
-                          Limit: ₹{limit} ({Math.floor(percentage)}%)
-                        </Text>
-                      )}
-                    </Animated.View>
-                  </Pressable>
-                );
-              })
-          )}
-        </ScrollView>
-      </View>
+      <SpendingCategories
+        loading={loading}
+        thisMonthExpenseData={thisMonthExpenseData}
+        categoryLimitMap={categoryLimitMap}
+        blinkingBorder={blinkingBorder}
+      />
 
       {/* Add Expense Button */}
       <Fab
@@ -491,11 +279,8 @@ export default function Dashboard() {
           scrollEnabled: true,
         }}
       >
-        <View
-          style={{ padding: 20, backgroundColor: isDark ? "#11151e" : "white" }}
-        >
+        <View style={{ padding: 20, backgroundColor: isDark ? "#11151e" : "white" }}>
           <Text style={styles.sectionTitle}>Add Expense</Text>
-
           <Text style={styles.inputLabel}>Category</Text>
           <View
             style={{
@@ -551,15 +336,7 @@ export default function Dashboard() {
             onPress={handleAddExpense}
             disabled={!isFormValid}
           >
-            <Text
-              style={{
-                color: "#fff",
-                textAlign: "center",
-                fontWeight: "600",
-              }}
-            >
-              OK
-            </Text>
+            <Text style={styles.ok}>OK</Text>
           </TouchableOpacity>
         </View>
       </Modalize>

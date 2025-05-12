@@ -14,7 +14,6 @@ import {
   StatusBar,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import LottieView from 'lottie-react-native';
 import axios from 'axios';
 
 const { height } = Dimensions.get('window');
@@ -64,13 +63,6 @@ export default function Signup() {
         keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.header}>Spendly</Text>
-
-        <LottieView
-          style={styles.lottie}
-          source={require('../assets/Register.json')}
-          autoPlay
-          loop
-        />
 
         <View style={styles.form}>
           <Text style={styles.label}>Name</Text>
@@ -153,11 +145,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     color: '#111',
-  },
-  lottie: {
-    width: 260,
-    height: 260,
-    marginBottom: 70,
   },
   form: {
     width: '100%',

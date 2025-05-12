@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   Animated,
   StyleSheet,
-  Dimensions,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { FlatList } from "react-native-gesture-handler";
@@ -22,8 +21,6 @@ type CustomDropdownProps = {
   onSelect: (value: string) => void;
 };
 
-const SCREEN_WIDTH = Dimensions.get("window").width;
-
 const CustomDropdown: React.FC<CustomDropdownProps> = ({
   items,
   selectedValue,
@@ -32,7 +29,7 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const animatedHeight = useRef(new Animated.Value(0)).current;
 
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
   const isDark = theme === 'dark';
   const styles = CDDstyles(isDark);
 

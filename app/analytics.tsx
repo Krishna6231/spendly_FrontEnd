@@ -15,7 +15,7 @@ import {
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { useRouter } from "expo-router";
-import moment from "moment"; // Ensure moment is installed
+import { format, subDays } from 'date-fns';
 import analyticsStyles from "@/styles/analytics.styles";
 import { useTheme } from "../theme/ThemeContext";
 
@@ -30,17 +30,17 @@ const AnalyticsScreen = () => {
   const styles = analyticsStyles(isDark);
 
   const last7Days = Array.from({ length: 7 }).map((_, i) =>
-    moment()
-      .subtract(6 - i, "days")
-      .format("YYYY-MM-DD")
-  );
+  format(subDays(new Date(), 6 - i), 'yyyy-MM-dd')
+);
 
   const last7DaysExpenses = last7Days.map((date) => {
     const expense = analytics.dailyExpenses.find((e: any) => e.date === date);
     return expense ? expense.amount : 0;
   });
 
-  const last7DaysLabels = last7Days.map((date) => moment(date).format("ddd"));
+  const last7DaysLabels = last7Days.map((date) =>
+  format(new Date(date), 'EEE')
+);
 
   return (
     <>
