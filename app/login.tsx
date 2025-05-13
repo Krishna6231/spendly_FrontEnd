@@ -43,10 +43,9 @@ export default function Login() {
         }
       );
 
-      const { accessToken, refreshToken, user } = response.data;
+      const { refreshToken, user } = response.data;
 
-      await SecureStore.setItemAsync("accessToken", accessToken);
-      await SecureStore.setItemAsync("refreshToken", refreshToken);
+      await SecureStore.setItemAsync("token", refreshToken);
       await SecureStore.setItemAsync("userData", JSON.stringify(user));
 
       showSnackbar("Login successful...", "black");

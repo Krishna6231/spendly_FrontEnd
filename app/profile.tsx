@@ -53,7 +53,7 @@ const Profile = () => {
 
   const handleLogout = async () => {
     try {
-      const refreshToken = await SecureStore.getItemAsync("refreshToken");
+      const refreshToken = await SecureStore.getItemAsync("token");
 
       if (refreshToken) {
         await axios.post("https://spendly-backend-5rgu.onrender.com/auth/logout", {
@@ -61,11 +61,10 @@ const Profile = () => {
         });
       }
 
-      await SecureStore.deleteItemAsync("authToken");
-      await SecureStore.deleteItemAsync("refreshToken");
+      await SecureStore.deleteItemAsync("token");
       await SecureStore.deleteItemAsync("userData");
 
-      router.replace("/login");
+      router.replace("/landing");
     } catch (error) {
       console.error("Error during logout:", error);
       Alert.alert("Logout Error", "Something went wrong while logging out.");

@@ -16,7 +16,7 @@ export default function LandingPage() {
       <Text style={styles.subtitle}>Explore your expenses smarter</Text>
 
       <TouchableOpacity style={styles.button} onPress={handleStart}>
-        <Text style={styles.buttonText}>Get Started</Text>
+        <Text style={styles.buttonText}>Log In</Text>
       </TouchableOpacity>
     </View>
   );
