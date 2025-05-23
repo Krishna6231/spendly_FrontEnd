@@ -212,8 +212,10 @@ export default function Dashboard() {
 
         {/* User Summary */}
         <View style={styles.userSummaryContainer}>
-          <View style={styles.summaryRow}>
+          <View style={{alignSelf: "center"}}>
             <Text style={styles.totalSpentLabel}>Total Spent This Month</Text>
+          </View>
+          <View style={{alignSelf: "center"}}>
             <Text style={styles.totalSpentAmount}>₹{totalSpent}</Text>
           </View>
         </View>
@@ -223,7 +225,7 @@ export default function Dashboard() {
           <View
             style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
           >
-            <Text style={{ fontSize: 16, color: "#666" }}>
+            <Text style={{ fontSize: 15, color: "#666" }}>
               Loading expenses...
             </Text>
           </View>

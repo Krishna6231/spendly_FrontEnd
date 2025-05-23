@@ -84,9 +84,11 @@ const indexStyles = (isDark: boolean) =>
     },
 
     userSummaryContainer: {
-      alignSelf: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
       width: "100%",
-      padding: 16,
+      height: 70,
+      paddingHorizontal: 15,
       backgroundColor: isDark ? "#1e293b" : "#f0f4ff",
       borderWidth: 1,
       borderColor: isDark ? "#334155" : "#eee",
@@ -97,6 +99,17 @@ const indexStyles = (isDark: boolean) =>
       shadowRadius: 6,
       elevation: 3,
       marginTop: 20,
+    },
+
+    totalSpentLabel: {
+      fontSize: 15,
+      color: isDark ? "#cbd5e1" : "black",
+    },
+
+    totalSpentAmount: {
+      fontSize: 28,
+      fontWeight: "900",
+      color: "#00bcd4",
     },
 
     noexpense: {
@@ -133,23 +146,6 @@ const indexStyles = (isDark: boolean) =>
       fontWeight: "600",
     },
 
-    totalSpentLabel: {
-      fontSize: 15,
-      color: isDark ? "#cbd5e1" : "black",
-    },
-
-    totalSpentAmount: {
-      fontSize: 32,
-      fontWeight: "900",
-      color: "#00bcd4",
-    },
-
-    summaryRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-    },
-
     categoryCard: {
       backgroundColor: isDark ? "#1e293b" : "#f0f4ff",
       borderColor: isDark ? "#334155" : "#eee",
@@ -157,7 +153,7 @@ const indexStyles = (isDark: boolean) =>
       borderWidth: 1,
       borderRadius: 12,
       marginTop: 30,
-      height: 400,
+      height: "50%",
       elevation: 2,
       shadowColor: "#000",
       shadowOpacity: 0.05,

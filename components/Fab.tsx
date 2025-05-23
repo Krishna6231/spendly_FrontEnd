@@ -45,17 +45,17 @@ const Fab: React.FC<FabProps> = ({
   };
 
   const animatedStyle1 = useAnimatedStyle(() => ({
-    transform: [{ translateY: -offset.value * 55 }],
+    transform: [{ translateY: -offset.value * 50 }],
     opacity: offset.value,
   }));
 
   const animatedStyle2 = useAnimatedStyle(() => ({
-    transform: [{ translateY: -offset.value * 110 }],
+    transform: [{ translateY: -offset.value * 100 }],
     opacity: offset.value,
   }));
 
   const animatedStyle3 = useAnimatedStyle(() => ({
-    transform: [{ translateY: -offset.value * 165 }],
+    transform: [{ translateY: -offset.value * 150 }],
     opacity: offset.value,
   }));
 

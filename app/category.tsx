@@ -204,10 +204,7 @@ const Category = () => {
                 <View
                   style={[
                     styles.colorBar,
-                    {
-                      backgroundColor: aselectedColor,
-                      borderWidth: 2,
-                    },
+                    {backgroundColor: aselectedColor},
                   ]}
                 ></View>
               </View>

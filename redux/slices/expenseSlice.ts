@@ -27,7 +27,7 @@ const initialState: ExpenseState = {
   loading: false,
 };
 
-const getAccessToken = async () => await SecureStore.getItemAsync('accessToken');
+const getAccessToken = async () => await SecureStore.getItemAsync('token');
 
 // ─── Async Thunks ─────────────────────────────────────────────────────
 

@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
       "supportsTablet": true
     },
@@ -16,7 +16,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#05001e"
       },
-      "package": "com.krishna6231.spendly_FrontEnd"
+      "package": "com.krishna6231.spendly_FrontEnd",
+      "permissions": ["*"]
     },
     "web": {
       "bundler": "metro",
