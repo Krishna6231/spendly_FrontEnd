@@ -1,19 +1,26 @@
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from "react-native";
+import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import Animated, {
   useSharedValue,
   withTiming,
   useAnimatedStyle,
-} from 'react-native-reanimated';
+} from "react-native-reanimated";
 import * as SecureStore from "expo-secure-store";
-import { deleteExpenseAsync } from '@/redux/slices/expenseSlice';
-import { ThunkDispatch } from '@reduxjs/toolkit';
-import allExpensesStyles from '@/styles/allExpenses.styles';
-import { useTheme } from '@/theme/ThemeContext';
+import { deleteExpenseAsync } from "@/redux/slices/expenseSlice";
+import { ThunkDispatch } from "@reduxjs/toolkit";
+import allExpensesStyles from "@/styles/allExpenses.styles";
+import { useTheme } from "@/theme/ThemeContext";
 
 // Typing the dispatch as ThunkDispatch
 const ExpenseItem = ({ item }: { item: any }) => {
@@ -23,7 +30,7 @@ const ExpenseItem = ({ item }: { item: any }) => {
   const dispatch = useDispatch<ThunkDispatch<RootState, unknown, any>>();
   const [user, setUser] = useState<any>(null);
   const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const isDark = theme === "dark";
   const styles = allExpensesStyles(isDark);
 
   const animatedDeleteStyle = useAnimatedStyle(() => ({
@@ -52,25 +59,24 @@ const ExpenseItem = ({ item }: { item: any }) => {
 
     const isThisWeek = date >= startOfWeek && date <= endOfWeek;
 
-
     if (isToday) {
       // Only show time
-      return date.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: 'numeric',
+      return date.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "numeric",
         hour12: true,
       });
     } else if (isThisWeek) {
       // Only show weekday
-      return date.toLocaleDateString('en-US', {
-        weekday: 'short',
+      return date.toLocaleDateString("en-US", {
+        weekday: "short",
       });
     } else {
       // Full date: 26 Apr, 2025
-      return date.toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
+      return date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
       });
     }
   };
@@ -93,7 +99,9 @@ const ExpenseItem = ({ item }: { item: any }) => {
     }
 
     try {
-      await dispatch(deleteExpenseAsync({ expenseId: item.id, userId: user.id }));
+      await dispatch(
+        deleteExpenseAsync({ expenseId: item.id, userId: user.id })
+      );
 
       Alert.alert("Deleted", "Expense deleted", [
         {
@@ -137,8 +145,15 @@ const ExpenseItem = ({ item }: { item: any }) => {
         </View>
         <Text style={styles.dateText}>{formatDate(item.date)}</Text>
 
+        {item.note?.trim() !== "" && (
+          <Text style={styles.noteText}>📝 {item.note}</Text>
+        )}
+
         <Animated.View style={[styles.deleteButton, animatedDeleteStyle]}>
-          <TouchableOpacity onPress={handleDelete} style={styles.deleteTouchable}>
+          <TouchableOpacity
+            onPress={handleDelete}
+            style={styles.deleteTouchable}
+          >
             <Ionicons name="trash" size={20} color="#fff" />
           </TouchableOpacity>
         </Animated.View>
@@ -150,8 +165,8 @@ const ExpenseItem = ({ item }: { item: any }) => {
 const History = () => {
   const expenses = useSelector((state: RootState) => state.expenses.expenses);
   const router = useRouter();
-  const { theme, toggleTheme } = useTheme();
-  const isDark = theme === 'dark';
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const styles = allExpensesStyles(isDark);
 
   const sortedExpenses = [...expenses].sort(
@@ -161,7 +176,11 @@ const History = () => {
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color={isDark ? "white" : "#4b5563"} />
+        <Ionicons
+          name="arrow-back"
+          size={24}
+          color={isDark ? "white" : "#4b5563"}
+        />
       </TouchableOpacity>
 
       <Text style={styles.title}>History</Text>

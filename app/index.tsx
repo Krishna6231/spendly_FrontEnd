@@ -20,7 +20,10 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import indexStyles from "@/styles/index.styles";
 import { Animated } from "react-native";
 import { useDispatch } from "react-redux";
-import { addExpenseAsync, fetchExpensesAsync } from "../redux/slices/expenseSlice";
+import {
+  addExpenseAsync,
+  fetchExpensesAsync,
+} from "../redux/slices/expenseSlice";
 import { fetchAnalytics } from "@/redux/slices/analyticsSlice";
 import Fab from "../components/Fab";
 import { useTheme } from "../theme/ThemeContext";
@@ -39,6 +42,7 @@ export default function Dashboard() {
   const [amount, setAmount] = useState("");
   const [items, setItems] = useState<{ label: string; value: string }[]>([]);
   const [date, setDate] = useState(new Date());
+  const [note, setNote] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [user, setUser] = useState<any>(null);
   const dispatch = useDispatch<AppDispatch>();
@@ -119,7 +123,8 @@ export default function Dashboard() {
       return acc;
     }, {} as Record<string, number>);
 
-    const categoryTotals: Record<string, { amount: number; color: string }> = {};
+    const categoryTotals: Record<string, { amount: number; color: string }> =
+      {};
 
     filteredExpenses.forEach((expense) => {
       const { category, amount } = expense;
@@ -168,6 +173,7 @@ export default function Dashboard() {
         date: formattedDate,
         amount: parseFloat(amount),
         id: user?.id,
+        note: note,
       };
 
       const result = await dispatch(addExpenseAsync(expensePayload));
@@ -179,6 +185,7 @@ export default function Dashboard() {
         setCategory("");
         setAmount("");
         setDate(new Date());
+        setNote("");
       } else {
         Alert.alert("Error", "Failed to add expense");
       }
@@ -212,10 +219,10 @@ export default function Dashboard() {
 
         {/* User Summary */}
         <View style={styles.userSummaryContainer}>
-          <View style={{alignSelf: "center"}}>
+          <View style={{ alignSelf: "center" }}>
             <Text style={styles.totalSpentLabel}>Total Spent This Month</Text>
           </View>
-          <View style={{alignSelf: "center"}}>
+          <View style={{ alignSelf: "center" }}>
             <Text style={styles.totalSpentAmount}>₹{totalSpent}</Text>
           </View>
         </View>
@@ -250,7 +257,9 @@ export default function Dashboard() {
               style={{ marginBottom: 12 }}
             />
             <Text style={styles.noexpense}>No expenses for this month.</Text>
-            <Text style={styles.tryadd}>Try adding your first spending now!</Text>
+            <Text style={styles.tryadd}>
+              Try adding your first spending now!
+            </Text>
           </View>
         )}
       </RefreshControl>
@@ -281,7 +290,9 @@ export default function Dashboard() {
           scrollEnabled: true,
         }}
       >
-        <View style={{ padding: 20, backgroundColor: isDark ? "#11151e" : "white" }}>
+        <View
+          style={{ padding: 20, backgroundColor: isDark ? "#11151e" : "white" }}
+        >
           <Text style={styles.sectionTitle}>Add Expense</Text>
           <Text style={styles.inputLabel}>Category</Text>
           <View
@@ -329,6 +340,16 @@ export default function Dashboard() {
               maximumDate={new Date()}
             />
           )}
+
+          <Text style={styles.inputLabel}>Note</Text>
+          <TextInput
+            placeholder="Enter a note (optional)"
+            placeholderTextColor={isDark ? "white" : "black"}
+            value={note}
+            onChangeText={setNote}
+            style={[styles.input, { height: 50 }]}
+            multiline
+          />
 
           <TouchableOpacity
             style={[

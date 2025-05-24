@@ -17,7 +17,7 @@ export const fetchAnalytics = createAsyncThunk(
   'analytics/fetchAnalytics',
   async (userId: string, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`https://spendly-backend-5rgu.onrender.com/analytics/user?userid=${userId}`);
+      const response = await axios.get(`http://3.108.51.119/analytics/user?userid=${userId}`);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch analytics');

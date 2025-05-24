@@ -15,8 +15,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import axios from 'axios';
-
-const { height } = Dimensions.get('window');
+import LottieView from 'lottie-react-native';
 
 export default function Signup() {
   const [name, setName] = useState('');
@@ -36,7 +35,7 @@ export default function Signup() {
 
     try {
       setLoading(true);
-      await axios.post('https://spendly-backend-5rgu.onrender.com/auth/signup', {
+      await axios.post('http://3.108.51.119/auth/signup', {
         name,
         email,
         password,
@@ -63,6 +62,13 @@ export default function Signup() {
         keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.header}>Spendly</Text>
+
+        <LottieView
+          style={styles.lottie}
+          source={require('../assets/Animations/Register.json')}
+          autoPlay
+          loop
+        />
 
         <View style={styles.form}>
           <Text style={styles.label}>Name</Text>
@@ -145,6 +151,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     color: '#111',
+  },
+  lottie: {
+    width: 260,
+    height: 260,
+    marginBottom: 70,
   },
   form: {
     width: '100%',

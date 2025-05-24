@@ -1,6 +1,6 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import axios from 'axios';
-import * as SecureStore from 'expo-secure-store';
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import axios from "axios";
+import * as SecureStore from "expo-secure-store";
 
 type Expense = {
   id: string;
@@ -27,17 +27,17 @@ const initialState: ExpenseState = {
   loading: false,
 };
 
-const getAccessToken = async () => await SecureStore.getItemAsync('token');
+const getAccessToken = async () => await SecureStore.getItemAsync("token");
 
 // ─── Async Thunks ─────────────────────────────────────────────────────
 
 export const fetchExpensesAsync = createAsyncThunk(
-  'expenses/fetchExpenses',
+  "expenses/fetchExpenses",
   async (userId: string, { rejectWithValue }) => {
     try {
       const token = await getAccessToken();
       const response = await axios.get(
-        `https://spendly-backend-5rgu.onrender.com/expense/user?userid=${userId}`,
+        `http://3.108.51.119/expense/user?userid=${userId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       return response.data;
@@ -48,12 +48,12 @@ export const fetchExpensesAsync = createAsyncThunk(
 );
 
 export const addExpenseAsync = createAsyncThunk(
-  'expenses/addExpense',
+  "expenses/addExpense",
   async (expensePayload: Expense, { rejectWithValue }) => {
     try {
       const token = await getAccessToken();
       const response = await axios.post(
-        'https://spendly-backend-5rgu.onrender.com/expense/add',
+        "http://3.108.51.119/expense/add",
         expensePayload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -65,12 +65,40 @@ export const addExpenseAsync = createAsyncThunk(
 );
 
 export const addCategoryAsync = createAsyncThunk(
-  'expenses/addCategory',
-  async (payload: { user_id: string; category: string; limit: number; color: string }, { rejectWithValue }) => {
+  "expenses/addCategory",
+  async (
+    payload: {
+      user_id: string;
+      category: string;
+      limit: number;
+      color: string;
+    },
+    { rejectWithValue }
+  ) => {
     try {
       const token = await getAccessToken();
       const response = await axios.post(
-        'https://spendly-backend-5rgu.onrender.com/expense/add-category',
+        "http://3.108.51.119/expense/add-category",
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const deleteCategoryAsync = createAsyncThunk(
+  "expenses/deleteCategory",
+  async (
+    payload: { user_id: string; category: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const token = await getAccessToken();
+      const response = await axios.post(
+        "http://3.108.51.119/expense/delete-category",
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -82,12 +110,20 @@ export const addCategoryAsync = createAsyncThunk(
 );
 
 export const editCategoryAsync = createAsyncThunk(
-  'expenses/editCategory',
-  async (payload: { user_id: string; category: string; limit: number; color: string}, { rejectWithValue }) => {
+  "expenses/editCategory",
+  async (
+    payload: {
+      user_id: string;
+      category: string;
+      limit: number;
+      color: string;
+    },
+    { rejectWithValue }
+  ) => {
     try {
       const token = await getAccessToken();
       const response = await axios.put(
-        'https://spendly-backend-5rgu.onrender.com/expense/edit-category',
+        "http://3.108.51.119/expense/edit-category",
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -99,12 +135,15 @@ export const editCategoryAsync = createAsyncThunk(
 );
 
 export const deleteExpenseAsync = createAsyncThunk(
-  'expenses/deleteExpense',
-  async (payload: { expenseId: string; userId: string }, { rejectWithValue }) => {
+  "expenses/deleteExpense",
+  async (
+    payload: { expenseId: string; userId: string },
+    { rejectWithValue }
+  ) => {
     try {
       const token = await getAccessToken();
       await axios.delete(
-        `https://spendly-backend-5rgu.onrender.com/expense/delete?expenseId=${payload.expenseId}&userId=${payload.userId}`,
+        `http://3.108.51.119/expense/delete?expenseId=${payload.expenseId}&userId=${payload.userId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       return payload.expenseId;
@@ -117,7 +156,7 @@ export const deleteExpenseAsync = createAsyncThunk(
 // ─── Slice ──────────────────────────────────────────────────────────────
 
 const expenseSlice = createSlice({
-  name: 'expenses',
+  name: "expenses",
   initialState,
   reducers: {
     setExpenses: (state, action: PayloadAction<Expense[]>) => {
@@ -163,13 +202,29 @@ const expenseSlice = createSlice({
         state.loading = false;
       })
 
+      //DELETE CATEGORY
+      .addCase(deleteCategoryAsync.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteCategoryAsync.fulfilled, (state, action) => {
+        state.categories = state.categories.filter(
+          (cat) => cat.category !== action.payload.category
+        );
+        state.loading = false;
+      })
+      .addCase(deleteCategoryAsync.rejected, (state) => {
+        state.loading = false;
+      })
+
       // EDIT CATEGORY
       .addCase(editCategoryAsync.pending, (state) => {
         state.loading = true;
       })
       .addCase(editCategoryAsync.fulfilled, (state, action) => {
         const { category, limit } = action.payload;
-        const index = state.categories.findIndex((cat) => cat.category === category);
+        const index = state.categories.findIndex(
+          (cat) => cat.category === category
+        );
         if (index !== -1) {
           state.categories[index].limit = limit;
         }
@@ -184,7 +239,9 @@ const expenseSlice = createSlice({
         state.loading = true;
       })
       .addCase(deleteExpenseAsync.fulfilled, (state, action) => {
-        state.expenses = state.expenses.filter((exp) => exp.id !== action.payload);
+        state.expenses = state.expenses.filter(
+          (exp) => exp.id !== action.payload
+        );
         state.loading = false;
       })
       .addCase(deleteExpenseAsync.rejected, (state) => {

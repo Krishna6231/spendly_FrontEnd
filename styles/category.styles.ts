@@ -4,7 +4,7 @@ const categoryStyles = (isDark: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: isDark ? 'black' : '#f9fafb',
+      backgroundColor: isDark ? "black" : "#f9fafb",
       padding: 16,
     },
     backButton: {
@@ -163,6 +163,25 @@ const categoryStyles = (isDark: boolean) =>
       borderRadius: 20,
       borderWidth: 2,
       borderColor: isDark ? "#475569" : "#ccc",
+    },
+    delcat: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      marginTop: 20,
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: "red",
+      alignSelf: "center",
+      backgroundColor: "#fff0f0",
+    },
+
+    delcatText: {
+      color: "red",
+      fontSize: 16,
+      fontWeight: "600",
     },
   });
 

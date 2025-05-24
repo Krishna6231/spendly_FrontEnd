@@ -1,5 +1,5 @@
-import { useTheme } from '@/theme/ThemeContext';
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import { useTheme } from "@/theme/ThemeContext";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -8,8 +8,8 @@ import {
   ActivityIndicator,
   FlatList,
   Dimensions,
-} from 'react-native';
-import Svg, { G, Circle, Path } from 'react-native-svg';
+} from "react-native";
+import Svg, { G, Circle, Path } from "react-native-svg";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -47,51 +47,64 @@ const describeArc = (
   endAngle: number
 ) => {
   if (startAngle === 0 && endAngle === 360) {
-    return `M ${x},${y} m ${radius}, 0 a ${radius},${radius} 0 1,0 -${2 * radius},0 a ${radius},${radius} 0 1,0 ${2 * radius},0`;
+    return `M ${x},${y} m ${radius}, 0 a ${radius},${radius} 0 1,0 -${
+      2 * radius
+    },0 a ${radius},${radius} 0 1,0 ${2 * radius},0`;
   }
   const start = polarToCartesian(x, y, radius, endAngle);
   const end = polarToCartesian(x, y, radius, startAngle);
-  const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
+  const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
 
   return [
-    'M', start.x, start.y,
-    'A', radius, radius, 0, largeArcFlag, 0, end.x, end.y
-  ].join(' ');
+    "M",
+    start.x,
+    start.y,
+    "A",
+    radius,
+    radius,
+    0,
+    largeArcFlag,
+    0,
+    end.x,
+    end.y,
+  ].join(" ");
 };
 
-const MemoizedPath = React.memo(({
-  path,
-  color,
-  strokeWidth,
-  opacity,
-  onPress,
-  accessibilityLabel
-}: {
-  path: string;
-  color: string;
-  strokeWidth: number;
-  opacity: number;
-  onPress: () => void;
-  accessibilityLabel: string;
-}) => (
-  <Path
-    d={path}
-    stroke={color}
-    strokeWidth={strokeWidth}
-    fill="none"
-    strokeLinecap="butt"
-    opacity={opacity}
-    onPress={onPress}
-    accessible
-    accessibilityLabel={accessibilityLabel}
-  />
-));
+const MemoizedPath = React.memo(
+  ({
+    path,
+    color,
+    strokeWidth,
+    opacity,
+    onPress,
+    accessibilityLabel,
+  }: {
+    path: string;
+    color: string;
+    strokeWidth: number;
+    opacity: number;
+    onPress: () => void;
+    accessibilityLabel: string;
+  }) => (
+    <Path
+      d={path}
+      stroke={color}
+      strokeWidth={strokeWidth}
+      fill="none"
+      strokeLinecap="butt"
+      opacity={opacity}
+      onPress={onPress}
+      accessible
+      accessibilityLabel={accessibilityLabel}
+    />
+  )
+);
 
 const RingChart: React.FC<Props> = ({
   data,
   size = 220,
   strokeWidth = 60,
-  onSegmentPress
+  onSegmentPress,
 }) => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -180,7 +193,9 @@ const RingChart: React.FC<Props> = ({
                   strokeWidth={expandedStroke}
                   opacity={opacity}
                   onPress={() => handleSegmentPress(index)}
-                  accessibilityLabel={`${seg.key}: ${Math.round(seg.value / total * 100)}%`}
+                  accessibilityLabel={`${seg.key}: ${Math.round(
+                    (seg.value / total) * 100
+                  )}%`}
                 />
               );
             })}
@@ -201,22 +216,22 @@ const RingChart: React.FC<Props> = ({
         horizontal
         keyExtractor={(item, index) => `${index}-${item.key}`}
         showsHorizontalScrollIndicator={false}
-        style={{width: screenWidth}}
+        style={{ width: screenWidth }}
         contentContainerStyle={styles.categoryScrollContainer}
         renderItem={({ item, index }) => {
           const isActive = index === activeIndex;
           return (
-            <View style={[styles.categoryItem, isActive && styles.activeItem]}>
+            <Pressable
+              onPress={() => handleSegmentPress(index)}
+              style={[styles.categoryItem, isActive && styles.activeItem]}
+            >
               <View
-                style={[
-                  styles.squareColor,
-                  { backgroundColor: item.color },
-                ]}
+                style={[styles.squareColor, { backgroundColor: item.color }]}
               />
               <Text style={styles.label}>
-                {item.key}: {Math.round(item.value / total * 100)}%
+                {item.key}: {Math.round((item.value / total) * 100)}%
               </Text>
-            </View>
+            </Pressable>
           );
         }}
       />
@@ -226,37 +241,37 @@ const RingChart: React.FC<Props> = ({
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 10,
   },
   loadingContainer: {
     height: 300,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   chartContainer: {
-    position: 'relative',
+    position: "relative",
   },
   categoryScrollContainer: {
     marginTop: 5,
     paddingHorizontal: 10,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   categoryItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'flex-start',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "flex-start",
     borderRadius: 10,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: "#f0f0f0",
     marginHorizontal: 5,
     paddingHorizontal: 12,
     paddingVertical: 4,
   },
   activeItem: {
     borderWidth: 1,
-    borderColor: '#00bcd4',
-    backgroundColor: '#e0f7fa',
+    borderColor: "#00bcd4",
+    backgroundColor: "#e0f7fa",
   },
   squareColor: {
     width: 12,
@@ -266,7 +281,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: "800",
   },
 });
 

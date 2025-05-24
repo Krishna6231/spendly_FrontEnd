@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+import LottieView from 'lottie-react-native';
 
 export default function LandingPage() {
   const router = useRouter();
@@ -12,6 +13,13 @@ export default function LandingPage() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Spendly</Text>
+
+      <LottieView
+        style={styles.giff}
+        source={require('../assets/Animations/Animation.json')}
+        autoPlay
+        loop
+      />
 
       <Text style={styles.subtitle}>Explore your expenses smarter</Text>
 

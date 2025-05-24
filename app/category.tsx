@@ -17,6 +17,7 @@ import {
   addCategoryAsync,
   fetchExpensesAsync,
   editCategoryAsync,
+  deleteCategoryAsync,
 } from "../redux/slices/expenseSlice";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -46,6 +47,7 @@ const Category = () => {
   const categoryList = useSelector(
     (state: RootState) => state.expenses.categories
   ) as CategoryItem[];
+  const expenses = useSelector((state: RootState) => state.expenses.expenses);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [nameInput, setNameInput] = useState("");
@@ -86,6 +88,54 @@ const Category = () => {
     setLimitInput("");
     setSelectedColor("");
     setModalVisible(true);
+  };
+
+  const handleCategoryDelete = () => {
+    if (!editingCategory || !user?.id) return;
+
+    const categoryExpenses = expenses.filter(
+      (exp) => exp.category === editingCategory
+    );
+
+    if (categoryExpenses.length > 0) {
+      Alert.alert(
+        "Can't Delete",
+        "You have expenses in this category. Please reassign or delete them first."
+      );
+    } else {
+      Alert.alert(
+        "Confirm Delete",
+        `Are you sure you want to delete the "${editingCategory}" category?`,
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: async () => {
+              try {
+                const response = await dispatch(
+                  deleteCategoryAsync({
+                    user_id: user.id,
+                    category: editingCategory,
+                  })
+                );
+
+                if (deleteCategoryAsync.fulfilled.match(response)) {
+                  Alert.alert("Success", "Category deleted successfully.");
+                  setModalVisible(false);
+                  dispatch(fetchExpensesAsync(user.id));
+                } else {
+                  Alert.alert("Error", "Failed to delete category.");
+                }
+              } catch (err) {
+                console.error("Delete Error:", err);
+                Alert.alert("Error", "An unexpected error occurred.");
+              }
+            },
+          },
+        ]
+      );
+    }
   };
 
   const handleSave = async () => {
@@ -200,12 +250,11 @@ const Category = () => {
             />
             {editingCategory && (
               <View style={styles.sc}>
-                <View><Text style={styles.modalSubTitle2}>Current color:</Text></View>
+                <View>
+                  <Text style={styles.modalSubTitle2}>Current color:</Text>
+                </View>
                 <View
-                  style={[
-                    styles.colorBar,
-                    {backgroundColor: aselectedColor},
-                  ]}
+                  style={[styles.colorBar, { backgroundColor: aselectedColor }]}
                 ></View>
               </View>
             )}
@@ -230,6 +279,20 @@ const Category = () => {
             <TouchableOpacity style={styles.okBtn} onPress={handleSave}>
               <Text style={styles.okBtnText}>OK</Text>
             </TouchableOpacity>
+            {editingCategory && (
+              <TouchableOpacity
+                onPress={handleCategoryDelete}
+                style={styles.delcat}
+              >
+                <MaterialIcons
+                  name="delete"
+                  size={20}
+                  color="red"
+                  style={{ marginRight: 6 }}
+                />
+                <Text style={styles.delcatText}>Delete</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </Modal>

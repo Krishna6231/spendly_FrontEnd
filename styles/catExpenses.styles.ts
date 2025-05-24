@@ -56,6 +56,12 @@ const catExpensesStyles = (isDark: boolean) => StyleSheet.create({
     color: isDark ? "#94a3b8" : "#888",
     marginTop: 4,
   },
+  noteText: {
+  marginTop: 6,
+  fontSize: 14,
+  fontStyle: "italic",
+  color: isDark ? "#cbd5e1" : "#4b5563",
+},
   noExpensesText: {
     fontSize: 16,
     color: isDark ? "#94a3b8" : "#999",

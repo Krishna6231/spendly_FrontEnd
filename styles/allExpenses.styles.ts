@@ -83,6 +83,12 @@ const allExpensesStyles = (isDark: boolean) => StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  noteText: {
+  marginTop: 6,
+  fontSize: 14,
+  fontStyle: "italic",
+  color: isDark ? "#cbd5e1" : "#4b5563",
+},
 });
 
 export default allExpensesStyles;

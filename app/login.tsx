@@ -13,6 +13,7 @@ import {
 import { Snackbar } from "react-native-paper";
 import { useRouter } from "expo-router";
 import axios from "axios";
+import LottieView from 'lottie-react-native';
 import * as SecureStore from "expo-secure-store";
 
 export default function Login() {
@@ -36,7 +37,7 @@ export default function Login() {
 
     try {
       const response = await axios.post(
-        "https://spendly-backend-5rgu.onrender.com/auth/login",
+        "http://3.108.51.119/auth/login",
         {
           email,
           password,
@@ -68,6 +69,13 @@ export default function Login() {
         keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.header}>Spendly</Text>
+
+        <LottieView
+          source={require('../assets/Animations/Login.json')}
+          autoPlay
+          loop
+          style={styles.lottie}
+        />
 
         <View style={styles.form}>
           <Text style={styles.label}>Email</Text>
@@ -133,6 +141,11 @@ const styles = StyleSheet.create({
   },
   form: {
     width: "100%",
+  },
+  lottie: {
+    width: 260,
+    height: 260,
+    marginBottom: 30,
   },
   label: {
     fontSize: 18,

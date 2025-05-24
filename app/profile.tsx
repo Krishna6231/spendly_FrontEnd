@@ -56,7 +56,7 @@ const Profile = () => {
       const refreshToken = await SecureStore.getItemAsync("token");
 
       if (refreshToken) {
-        await axios.post("https://spendly-backend-5rgu.onrender.com/auth/logout", {
+        await axios.post("http://3.108.51.119/auth/logout", {
           refreshToken,
         });
       }
@@ -90,7 +90,7 @@ const Profile = () => {
         {/* Account Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account</Text>
-          <TouchableOpacity style={styles.row}>
+          <TouchableOpacity style={styles.row} onPress={() => router.push("/edit-profile")}>
             <Feather name="user" size={20} color={isDark ? "white" : "#4b5563"} />
             <Text style={styles.rowText}>Edit Profile</Text>
           </TouchableOpacity>

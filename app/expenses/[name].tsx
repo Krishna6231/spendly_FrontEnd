@@ -3,16 +3,16 @@ import React from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import { Ionicons } from '@expo/vector-icons'; // Import Ionicons for the back arrow
+import { Ionicons } from "@expo/vector-icons"; // Import Ionicons for the back arrow
 import catExpensesStyles from "@/styles/catExpenses.styles";
-import { useTheme } from '@/theme/ThemeContext';
+import { useTheme } from "@/theme/ThemeContext";
 
 const AllExpenses = () => {
   const expenses = useSelector((state: RootState) => state.expenses.expenses);
   const { name } = useLocalSearchParams();
-  const router = useRouter(); 
+  const router = useRouter();
   const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const isDark = theme === "dark";
   const styles = catExpensesStyles(isDark);
 
   const filteredAndSortedExpenses = expenses
@@ -37,20 +37,20 @@ const AllExpenses = () => {
     const isThisWeek = date >= startOfWeek && date <= endOfWeek;
 
     if (isToday) {
-      return date.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: 'numeric',
+      return date.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "numeric",
         hour12: true,
       });
     } else if (isThisWeek) {
-      return date.toLocaleDateString('en-US', {
-        weekday: 'short',
+      return date.toLocaleDateString("en-US", {
+        weekday: "short",
       });
     } else {
-      return date.toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
+      return date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
       });
     }
   };
@@ -59,20 +59,31 @@ const AllExpenses = () => {
   const now = new Date();
   const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  const thisMonthExpenses = filteredAndSortedExpenses.filter((expense) => new Date(expense.date) >= firstOfMonth);
-  const previousExpenses = filteredAndSortedExpenses.filter((expense) => new Date(expense.date) < firstOfMonth);
+  const thisMonthExpenses = filteredAndSortedExpenses.filter(
+    (expense) => new Date(expense.date) >= firstOfMonth
+  );
+  const previousExpenses = filteredAndSortedExpenses.filter(
+    (expense) => new Date(expense.date) < firstOfMonth
+  );
 
   const renderExpenseItem = ({ item }: { item: any }) => (
     <View key={item.id} style={styles.expenseCard}>
       <Text style={styles.amountText}>₹{item.amount}</Text>
       <Text style={styles.dateText}>{formatDate(item.date)}</Text>
+      {item.note?.trim() !== "" && (
+        <Text style={styles.noteText}>📝 {item.note}</Text>
+      )}
     </View>
   );
 
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color={isDark ? "white" : "#4b5563"} />
+        <Ionicons
+          name="arrow-back"
+          size={24}
+          color={isDark ? "white" : "#4b5563"}
+        />
       </TouchableOpacity>
 
       <Text style={styles.title}>All Expenses of {name}</Text>
@@ -102,7 +113,9 @@ const AllExpenses = () => {
           renderItem={null}
         />
       ) : (
-        <Text style={styles.noExpensesText}>No expenses found for this category.</Text>
+        <Text style={styles.noExpensesText}>
+          No expenses found for this category.
+        </Text>
       )}
     </View>
   );
