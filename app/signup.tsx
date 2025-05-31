@@ -35,7 +35,7 @@ export default function Signup() {
 
     try {
       setLoading(true);
-      await axios.post('http://3.108.51.119/auth/signup', {
+      await axios.post('https://api.moneynut.co.in/auth/signup', {
         name,
         email,
         password,
@@ -61,7 +61,7 @@ export default function Signup() {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.header}>Spendly</Text>
+        <Text style={styles.header}>MoneyNut</Text>
 
         <LottieView
           style={styles.lottie}

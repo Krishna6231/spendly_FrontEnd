@@ -12,7 +12,7 @@ export default function LandingPage() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Spendly</Text>
+      <Text style={styles.title}>MoneyNut</Text>
 
       <LottieView
         style={styles.giff}

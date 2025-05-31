@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Spendly",
-    "slug": "Spendly",
+    "slug": "spendly_FrontEnd",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -12,6 +12,7 @@
       "supportsTablet": true
     },
     "android": {
+      "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#05001e"
@@ -45,9 +46,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "be812c0e-2d3f-4ee2-8452-8b51c76af8f3"
+        "projectId": "8f653a58-13cd-44ef-9e79-954234b77b36"
       }
     },
-    "owner": "vivek_1729"
+    "owner": "krishna6231"
   }
 }

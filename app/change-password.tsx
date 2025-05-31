@@ -54,7 +54,7 @@ export default function ChangePasswordScreen() {
     try {
       setLoading(true);
       const response = await axios.post(
-        "http://3.108.51.119/auth/change-password",
+        "https://api.moneynut.co.in/auth/change-password",
         {
           userId: user.id,
           oldPassword: oldPass,

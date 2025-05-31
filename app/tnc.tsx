@@ -30,7 +30,7 @@ const TermsAndConditions = () => {
           Terms and Conditions
         </Text>
         <Text style={{ fontSize: 16, lineHeight: 24, color: colors.secondary, marginBottom: 12 }}>
-          By using Spendly, you agree to the following terms and conditions:
+          By using MoneyNut, you agree to the following terms and conditions:
         </Text>
         <Text style={{ fontSize: 18, fontWeight: "600", color: colors.text, marginBottom: 8 }}>
           1. Usage
@@ -50,7 +50,7 @@ const TermsAndConditions = () => {
           3. Liability
         </Text>
         <Text style={{ fontSize: 16, color: colors.secondary, marginBottom: 12 }}>
-          Spendly is provided “as is.” We are not liable for any financial losses or miscalculations
+          MoneyNut is provided “as is.” We are not liable for any financial losses or miscalculations
           based on data input by users.
         </Text>
         <Text style={{ fontSize: 18, fontWeight: "600", color: colors.text, marginBottom: 8 }}>

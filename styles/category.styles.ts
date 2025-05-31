@@ -27,7 +27,7 @@ const categoryStyles = (isDark: boolean) =>
       justifyContent: "space-between",
       alignItems: "center",
       backgroundColor: isDark ? "#1e293b" : "#f2f2f2",
-      padding: 16,
+      padding: 10,
       borderRadius: 12,
       marginBottom: 12,
       shadowColor: "#000",
@@ -76,6 +76,13 @@ const categoryStyles = (isDark: boolean) =>
       padding: 20,
       borderRadius: 12,
       width: "80%",
+      elevation: 5,
+    },
+    modalContent2: {
+      backgroundColor: isDark ? "#1f2937" : "#fff",
+      padding: 20,
+      borderRadius: 12,
+      width: "90%",
       elevation: 5,
     },
     modalTitle: {
@@ -182,6 +189,92 @@ const categoryStyles = (isDark: boolean) =>
       color: "red",
       fontSize: 16,
       fontWeight: "600",
+    },
+    bottom_buttons: {
+      display: "flex",
+      flexDirection: "row",
+      justifyContent: "space-evenly",
+    },
+    partition: {
+      height: 1,
+      backgroundColor: isDark ? "#444" : "#ccc",
+      marginVertical: 12,
+    },
+
+    toggleRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingHorizontal: 12,
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: isDark ? "#fff" : "#000",
+    },
+
+    subscriptionContainer: {
+      overflow: "hidden",
+      paddingHorizontal: 16,
+    },
+    subscriptionItem: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: isDark ? "#333" : "#eee",
+    },
+    subName: {
+      fontSize: 16,
+      fontWeight: "500",
+      color: isDark ? "#fff" : "#000",
+    },
+
+    subDetails: {
+      fontSize: 14,
+      color: isDark ? "#aaa" : "#666",
+      marginTop: 2,
+    },
+
+    iconRow: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    emptyText: {
+      textAlign: "center",
+      color: isDark ? "#999" : "#777",
+      fontStyle: "italic",
+      paddingVertical: 20,
+    },
+    dateGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      justifyContent: "center",
+      gap: 7,
+      marginBottom: 20,
+    },
+
+    dateCircle: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: "#e5e7eb",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+
+    selectedDateCircle: {
+      backgroundColor: "#007bff",
+    },
+
+    dateText: {
+      color: "#111827",
+      fontWeight: "600",
+    },
+
+    selectedDateText: {
+      color: "#fff",
     },
   });
 

@@ -83,7 +83,7 @@ const Fab: React.FC<FabProps> = ({
           android_ripple={{ color: "transparent" }}
         >
           <View style={styles.labelContainer}>
-            <Text style={styles.label}>Add Category</Text>
+            <Text style={styles.label}>Category/Subscriptions</Text>
           </View>
           <View style={styles.circleIcon}>
             <Icon name="category" size={20} color="#fff" />

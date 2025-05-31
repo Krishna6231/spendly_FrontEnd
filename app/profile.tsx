@@ -56,7 +56,7 @@ const Profile = () => {
       const refreshToken = await SecureStore.getItemAsync("token");
 
       if (refreshToken) {
-        await axios.post("http://3.108.51.119/auth/logout", {
+        await axios.post("https://api.moneynut.co.in/auth/logout", {
           refreshToken,
         });
       }

@@ -37,7 +37,7 @@ export default function Login() {
 
     try {
       const response = await axios.post(
-        "http://3.108.51.119/auth/login",
+        "https://api.moneynut.co.in/auth/login",
         {
           email,
           password,
@@ -68,7 +68,7 @@ export default function Login() {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.header}>Spendly</Text>
+        <Text style={styles.header}>MoneyNut</Text>
 
         <LottieView
           source={require('../assets/Animations/Login.json')}

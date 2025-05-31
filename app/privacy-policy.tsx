@@ -30,7 +30,7 @@ const PrivacyPolicy = () => {
           Privacy Policy
         </Text>
         <Text style={{ fontSize: 16, lineHeight: 24, color: colors.secondary, marginBottom: 12 }}>
-          Spendly values your privacy. This policy outlines how we collect, use, and protect your
+          MoneyNut values your privacy. This policy outlines how we collect, use, and protect your
           information.
         </Text>
         <Text style={{ fontSize: 18, fontWeight: "600", color: colors.text, marginBottom: 8 }}>

@@ -15,15 +15,23 @@ type CategoryItem = {
   limit: number;
 };
 
+type SubscriptionItem = {
+  subscription: string;
+  amount: number;
+  autopay_date: number;
+};
+
 interface ExpenseState {
   expenses: Expense[];
   categories: CategoryItem[];
+  subscriptions: SubscriptionItem[];
   loading: boolean;
 }
 
 const initialState: ExpenseState = {
   expenses: [],
   categories: [],
+  subscriptions: [],
   loading: false,
 };
 
@@ -37,7 +45,7 @@ export const fetchExpensesAsync = createAsyncThunk(
     try {
       const token = await getAccessToken();
       const response = await axios.get(
-        `http://3.108.51.119/expense/user?userid=${userId}`,
+        `https://api.moneynut.co.in/expense/user?userid=${userId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       return response.data;
@@ -53,7 +61,7 @@ export const addExpenseAsync = createAsyncThunk(
     try {
       const token = await getAccessToken();
       const response = await axios.post(
-        "http://3.108.51.119/expense/add",
+        "https://api.moneynut.co.in/expense/add",
         expensePayload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -78,7 +86,7 @@ export const addCategoryAsync = createAsyncThunk(
     try {
       const token = await getAccessToken();
       const response = await axios.post(
-        "http://3.108.51.119/expense/add-category",
+        "https://api.moneynut.co.in/expense/add-category",
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -98,7 +106,27 @@ export const deleteCategoryAsync = createAsyncThunk(
     try {
       const token = await getAccessToken();
       const response = await axios.post(
-        "http://3.108.51.119/expense/delete-category",
+        "https://api.moneynut.co.in/expense/delete-category",
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const deleteSubscriptionAsync = createAsyncThunk(
+  "expenses/deleteSubscription",
+  async (
+    payload: { user_id: string; subscription: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const token = await getAccessToken();
+      const response = await axios.post(
+        "https://api.moneynut.co.in/expense/delete-subscription",
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -123,7 +151,57 @@ export const editCategoryAsync = createAsyncThunk(
     try {
       const token = await getAccessToken();
       const response = await axios.put(
-        "http://3.108.51.119/expense/edit-category",
+        "https://api.moneynut.co.in/expense/edit-category",
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const addSubscriptionAsync = createAsyncThunk(
+  "expenses/addSubscription",
+  async (
+    payload: {
+      user_id: string;
+      subscription: string;
+      amount: number;
+      autopay_date: number;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const token = await getAccessToken();
+      const response = await axios.post(
+        "https://api.moneynut.co.in/expense/add-subscription",
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const editSubscriptionAsync = createAsyncThunk(
+  "expenses/editSubscription",
+  async (
+    payload: {
+      user_id: string;
+      subscription: string;
+      amount: number;
+      autopay_date: number;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const token = await getAccessToken();
+      const response = await axios.put(
+        "https://api.moneynut.co.in/expense/edit-subscription",
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -143,7 +221,7 @@ export const deleteExpenseAsync = createAsyncThunk(
     try {
       const token = await getAccessToken();
       await axios.delete(
-        `http://3.108.51.119/expense/delete?expenseId=${payload.expenseId}&userId=${payload.userId}`,
+        `https://api.moneynut.co.in/expense/delete?expenseId=${payload.expenseId}&userId=${payload.userId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       return payload.expenseId;
@@ -172,6 +250,7 @@ const expenseSlice = createSlice({
       .addCase(fetchExpensesAsync.fulfilled, (state, action) => {
         state.expenses = action.payload.expenses;
         state.categories = action.payload.categories;
+        state.subscriptions = action.payload.subscriptions;
         state.loading = false;
       })
       .addCase(fetchExpensesAsync.rejected, (state) => {
@@ -245,6 +324,51 @@ const expenseSlice = createSlice({
         state.loading = false;
       })
       .addCase(deleteExpenseAsync.rejected, (state) => {
+        state.loading = false;
+      })
+
+      //ADD SUBSCRIPTION
+      .addCase(addSubscriptionAsync.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(addSubscriptionAsync.fulfilled, (state, action) => {
+        state.subscriptions.push(action.payload);
+        state.loading = false;
+      })
+      .addCase(addSubscriptionAsync.rejected, (state) => {
+        state.loading = false;
+      })
+
+      //EDIT SUBSCRIPTION
+      .addCase(editSubscriptionAsync.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(editSubscriptionAsync.fulfilled, (state, action) => {
+        const { subscription, amount, autopay_date } = action.payload;
+        const index = state.subscriptions.findIndex(
+          (cat) => cat.subscription === subscription
+        );
+        if (index !== -1) {
+          state.subscriptions[index].amount = amount;
+          state.subscriptions[index].autopay_date = autopay_date;
+        }
+        state.loading = false;
+      })
+      .addCase(editSubscriptionAsync.rejected, (state) => {
+        state.loading = false;
+      })
+
+      //DELETE SUBSCRIPTION
+      .addCase(deleteSubscriptionAsync.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteSubscriptionAsync.fulfilled, (state, action) => {
+        state.subscriptions = state.subscriptions.filter(
+          (sub) => sub.subscription !== action.payload.subscription
+        );
+        state.loading = false;
+      })
+      .addCase(deleteSubscriptionAsync.rejected, (state) => {
         state.loading = false;
       });
   },
