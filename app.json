@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "MoneyNut",
-    "slug": "MoneyNut",
+    "slug": "Spendly",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -17,9 +17,8 @@
         "backgroundColor": "#05001e"
       },
       "package": "com.krishna6231.spendly_FrontEnd",
-      "permissions": [
-        "*"
-      ]
+      "permissions": ["*"],
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -37,7 +36,10 @@
           "backgroundColor": "#05001e"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      ["expo-notifications",{
+        "icon" : "./assets/images/icon.png"
+      }]
     ],
     "experiments": {
       "typedRoutes": true
@@ -47,9 +49,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "3d80467c-00a9-4ca6-b3fc-df49cec421c7"
+        "projectId": "be812c0e-2d3f-4ee2-8452-8b51c76af8f3"
       }
     },
-    "owner": "krishna6231"
+    "owner": "vivek_1729"
   }
 }

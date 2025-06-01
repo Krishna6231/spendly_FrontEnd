@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -10,54 +9,63 @@ import {
   ScrollView,
   StatusBar,
   StyleSheet,
-} from 'react-native';
-import LottieView from 'lottie-react-native';
-import { Snackbar } from 'react-native-paper';
-  import axios from 'axios';
-
+} from "react-native";
+import LottieView from "lottie-react-native";
+import { Snackbar } from "react-native-paper";
+import axios from "axios";
+import { useRouter } from "expo-router";
 
 export default function ForgotPasswordScreen() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [snackbarVisible, setSnackbarVisible] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarColor, setSnackbarColor] = useState('#4caf50');
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarColor, setSnackbarColor] = useState("#4caf50");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
-
-const handleSendResetLink = async () => {
-  if (!email.includes('@')) {
-    setSnackbarMessage('Please enter a valid email address');
-    setSnackbarColor('#f44336');
-    setSnackbarVisible(true);
-    return;
-  }
-
-  try {
-    const response = await axios.post('https://api.moneynut.co.in/auth/forgot-password', {
-      email,
-    });
-    console.log(response)
-
-    if (response.status === 201) {
-      setSnackbarMessage('Reset link sent to your email');
-      setSnackbarColor('#4caf50');
-    } else {
-      setSnackbarMessage('Failed to send reset link');
-      setSnackbarColor('#f44336');
+  const handleSendResetLink = async () => {
+    if (!email.includes("@")) {
+      setSnackbarMessage("Please enter a valid email address");
+      setSnackbarColor("#f44336");
+      setSnackbarVisible(true);
+      return;
     }
-  } catch (error: any) {
-    const msg = error?.response?.data?.message || 'An error occurred';
-    setSnackbarMessage(msg);
-    setSnackbarColor('#f44336');
-  }
 
-  setSnackbarVisible(true);
-};
+    setIsSubmitting(true);
 
+    try {
+      const response = await axios.post(
+        "https://api.moneynut.co.in/auth/forgot-password",
+        {
+          email,
+        }
+      );
+
+      if (response.status === 201) {
+        setSnackbarMessage("Reset link sent to your email");
+        setSnackbarColor("#4caf50");
+
+        setTimeout(() => {
+          router.push("/login");
+        }, 2000);
+      } else {
+        setSnackbarMessage("Failed to send reset link");
+        setSnackbarColor("#f44336");
+      }
+    } catch (error: any) {
+      const msg = error?.response?.data?.message || "An error occurred";
+      setSnackbarMessage(msg);
+      setSnackbarColor("#f44336");
+    }
+
+    setIsSubmitting(false); // re-enable button on failure
+    setSnackbarVisible(true);
+  };
 
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <StatusBar barStyle="dark-content" backgroundColor="white" />
 
@@ -68,7 +76,7 @@ const handleSendResetLink = async () => {
         <Text style={styles.header}>MoneyNut</Text>
 
         <LottieView
-          source={require('../assets/Animations/Email.json')}
+          source={require("../assets/Animations/Email.json")}
           autoPlay
           loop
           style={styles.lottie}
@@ -86,8 +94,14 @@ const handleSendResetLink = async () => {
             autoCapitalize="none"
           />
 
-          <TouchableOpacity style={styles.resetBtn} onPress={handleSendResetLink}>
-            <Text style={styles.resetText}>Send Reset Link</Text>
+          <TouchableOpacity
+            style={[styles.resetBtn, { opacity: isSubmitting ? 0.6 : 1 }]}
+            onPress={handleSendResetLink}
+            disabled={isSubmitting}
+          >
+            <Text style={styles.resetText}>
+              {isSubmitting ? "Sending..." : "Send Reset Link"}
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -106,19 +120,19 @@ const handleSendResetLink = async () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   scrollContent: {
     paddingVertical: 40,
     paddingHorizontal: 24,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
+    justifyContent: "flex-start",
+    alignItems: "center",
   },
   header: {
     fontSize: 40,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 30,
-    color: '#111',
+    color: "#111",
   },
   lottie: {
     width: 260,
@@ -126,30 +140,30 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   form: {
-    width: '100%',
+    width: "100%",
   },
   label: {
     fontSize: 18,
     marginBottom: 6,
-    color: '#222',
+    color: "#222",
   },
   input: {
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderBottomColor: "#ccc",
     fontSize: 16,
     paddingVertical: 10,
     marginBottom: 24,
-    color: '#000',
+    color: "#000",
   },
   resetBtn: {
-    backgroundColor: '#000',
+    backgroundColor: "#000",
     paddingVertical: 14,
     borderRadius: 8,
     marginTop: 8,
   },
   resetText: {
-    color: '#fff',
-    textAlign: 'center',
+    color: "#fff",
+    textAlign: "center",
     fontSize: 18,
   },
 });

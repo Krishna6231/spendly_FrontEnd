@@ -54,11 +54,10 @@ const Profile = () => {
   const handleLogout = async () => {
     try {
       const refreshToken = await SecureStore.getItemAsync("token");
-      console.log(refreshToken);
 
       if (refreshToken) {
         const res = await axios.post("https://api.moneynut.co.in/auth/logout", {
-          refreshToken,
+          refreshToken: refreshToken,
           userid: user?.id,
         });
       }
