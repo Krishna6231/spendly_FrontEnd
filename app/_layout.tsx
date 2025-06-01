@@ -7,6 +7,21 @@ import { Provider } from "react-redux";
 import { store } from "../redux/store";
 import { ThemeProvider } from "../theme/ThemeContext";
 import base64 from "base-64";
+import * as Notifications from 'expo-notifications';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => {
+    return {
+      shouldShowAlert: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+      shouldShowBanner: true,  // ✅ new
+      shouldShowList: true,    // ✅ new
+    };
+  },
+});
+
+
 
 const decodeJwt = (token: string) => {
   try {
@@ -32,6 +47,23 @@ const isTokenExpired = (token: string): boolean => {
 export default function Layout() {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+
+  useEffect(() => {
+  const subscriptionReceived = Notifications.addNotificationReceivedListener(notification => {
+    console.log('Notification Received:', notification);
+    // You can update state, trigger sounds, etc.
+  });
+
+  const subscriptionResponse = Notifications.addNotificationResponseReceivedListener(response => {
+    console.log('User interacted with notification:', response);
+    // You can navigate based on data, etc.
+  });
+
+  return () => {
+    subscriptionReceived.remove();
+    subscriptionResponse.remove();
+  };
+}, []);
 
   useEffect(() => {
     const checkLoginStatus = async () => {

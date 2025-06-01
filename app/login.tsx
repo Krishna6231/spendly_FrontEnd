@@ -15,6 +15,7 @@ import { useRouter } from "expo-router";
 import axios from "axios";
 import LottieView from 'lottie-react-native';
 import * as SecureStore from "expo-secure-store";
+import { registerForPushNotificationsAsync } from "../utils/notifications";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -48,6 +49,14 @@ export default function Login() {
 
       await SecureStore.setItemAsync("token", refreshToken);
       await SecureStore.setItemAsync("userData", JSON.stringify(user));
+
+      const expoPushToken = await registerForPushNotificationsAsync();
+      if (expoPushToken) {
+        await axios.post("https://api.moneynut.co.in/auth/push-token", {
+          userid: user.id,
+          expoPushToken,
+        });
+      }
 
       showSnackbar("Login successful...", "black");
       setTimeout(() => router.replace("/"), 300);
@@ -103,6 +112,10 @@ export default function Login() {
             <Text style={styles.loginText}>Login</Text>
           </TouchableOpacity>
 
+          <TouchableOpacity onPress={() => router.push("/forgot-password")} style={styles.forgotPassword}>
+            <Text style={styles.forgotPassword}>Forgot Password?</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity onPress={() => router.push("/signup")}>
             <Text style={styles.signUpLink}>
               Don't have an account?{" "}
@@ -139,6 +152,19 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     color: "#111",
   },
+ 
+forgotPassword: {
+  paddingTop: 10,
+  paddingLeft: 30,
+  paddingHorizontal: 'auto',
+  color: '#000',        
+  fontSize: 15,
+  textDecorationLine: 'none',
+  textAlign: 'center',  // center text horizontally
+  maxWidth: '90%',      // restrict max width so it fits nicely
+},
+
+
   form: {
     width: "100%",
   },

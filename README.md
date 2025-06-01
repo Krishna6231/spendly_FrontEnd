@@ -1,4 +1,4 @@
-'# 📱 Spendly – Mobile App (Frontend) - [![Watch the demo]](https://drive.google.com/file/d/1jtlMrW0MZnfHbZEGMyiJrAl-0lbRrbYJ/view?usp=drivesdk)
+'# 📱 MoneyNut – Mobile App (Frontend) - [![Watch the demo]](https://drive.google.com/file/d/1jtlMrW0MZnfHbZEGMyiJrAl-0lbRrbYJ/view?usp=drivesdk)
 
 
 A cross-platform mobile application for tracking expenses, setting category limits, and visualizing spending trends using interactive charts. Built with **React Native**, **Expo**, and **TypeScript**.

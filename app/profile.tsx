@@ -21,7 +21,7 @@ const Profile = () => {
   const animatedValue = useRef(new Animated.Value(0)).current;
   const { theme, toggleTheme } = useTheme();
 
-  const isDark = theme === 'dark';
+  const isDark = theme === "dark";
   const styles = profileStyles(isDark);
 
   useEffect(() => {
@@ -54,10 +54,12 @@ const Profile = () => {
   const handleLogout = async () => {
     try {
       const refreshToken = await SecureStore.getItemAsync("token");
+      console.log(refreshToken);
 
       if (refreshToken) {
-        await axios.post("https://api.moneynut.co.in/auth/logout", {
+        const res = await axios.post("https://api.moneynut.co.in/auth/logout", {
           refreshToken,
+          userid: user?.id,
         });
       }
 
@@ -74,7 +76,11 @@ const Profile = () => {
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color={isDark ? "white" : "#4b5563"} />
+        <Ionicons
+          name="arrow-back"
+          size={24}
+          color={isDark ? "white" : "#4b5563"}
+        />
       </TouchableOpacity>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* User Info Section */}
@@ -90,8 +96,15 @@ const Profile = () => {
         {/* Account Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account</Text>
-          <TouchableOpacity style={styles.row} onPress={() => router.push("/edit-profile")}>
-            <Feather name="user" size={20} color={isDark ? "white" : "#4b5563"} />
+          <TouchableOpacity
+            style={styles.row}
+            onPress={() => router.push("/edit-profile")}
+          >
+            <Feather
+              name="user"
+              size={20}
+              color={isDark ? "white" : "#4b5563"}
+            />
             <Text style={styles.rowText}>Edit Profile</Text>
           </TouchableOpacity>
         </View>
@@ -100,16 +113,28 @@ const Profile = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>App Settings</Text>
           <TouchableOpacity style={styles.row}>
-            <Feather name="list" size={20} color={isDark ? "white" : "#4b5563"} />
+            <Feather
+              name="list"
+              size={20}
+              color={isDark ? "white" : "#4b5563"}
+            />
             <Text style={styles.rowText}>Manage Categories</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.row}>
-            <Feather name="dollar-sign" size={20} color={isDark ? "white" : "#4b5563"} />
+            <Feather
+              name="dollar-sign"
+              size={20}
+              color={isDark ? "white" : "#4b5563"}
+            />
             <Text style={styles.rowText}>Currency: ₹</Text>
           </TouchableOpacity>
           <View style={styles.rowBetween}>
             <View style={styles.row}>
-              <Feather name="sun" size={20} color={isDark ? "white" : "#4b5563"} />
+              <Feather
+                name="sun"
+                size={20}
+                color={isDark ? "white" : "#4b5563"}
+              />
               <Text style={styles.rowText}>Theme</Text>
             </View>
 
@@ -162,7 +187,11 @@ const Profile = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Notifications</Text>
           <TouchableOpacity style={styles.row}>
-            <Feather name="bell" size={20} color={isDark ? "white" : "#4b5563"} />
+            <Feather
+              name="bell"
+              size={20}
+              color={isDark ? "white" : "#4b5563"}
+            />
             <Text style={styles.rowText}>Spending Alerts</Text>
           </TouchableOpacity>
         </View>
@@ -170,16 +199,34 @@ const Profile = () => {
         {/* About Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>About</Text>
-          <TouchableOpacity style={styles.row} onPress={() => router.push("/privacy-policy")}>
-            <Feather name="lock" size={20} color={isDark ? "white" : "#4b5563"} />
+          <TouchableOpacity
+            style={styles.row}
+            onPress={() => router.push("/privacy-policy")}
+          >
+            <Feather
+              name="lock"
+              size={20}
+              color={isDark ? "white" : "#4b5563"}
+            />
             <Text style={styles.rowText}>Privacy Policy</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.row} onPress={() => router.push("/tnc")}>
-            <Feather name="file-text" size={20} color={isDark ? "white" : "#4b5563"} />
+          <TouchableOpacity
+            style={styles.row}
+            onPress={() => router.push("/tnc")}
+          >
+            <Feather
+              name="file-text"
+              size={20}
+              color={isDark ? "white" : "#4b5563"}
+            />
             <Text style={styles.rowText}>Terms and Conditions</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.row}>
-            <Feather name="info" size={20} color={isDark ? "white" : "#4b5563"} />
+            <Feather
+              name="info"
+              size={20}
+              color={isDark ? "white" : "#4b5563"}
+            />
             <Text style={styles.rowText}>Version 1.0.0</Text>
           </TouchableOpacity>
         </View>

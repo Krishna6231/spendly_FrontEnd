@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Spendly",
-    "slug": "spendly_FrontEnd",
+    "name": "MoneyNut",
+    "slug": "MoneyNut",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -18,7 +18,9 @@
         "backgroundColor": "#05001e"
       },
       "package": "com.krishna6231.spendly_FrontEnd",
-      "permissions": ["*"]
+      "permissions": [
+        "*"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -46,7 +48,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "8f653a58-13cd-44ef-9e79-954234b77b36"
+        "projectId": "3d80467c-00a9-4ca6-b3fc-df49cec421c7"
       }
     },
     "owner": "krishna6231"
