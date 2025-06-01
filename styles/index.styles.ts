@@ -89,7 +89,7 @@ const indexStyles = (isDark: boolean) =>
       width: "100%",
       height: 70,
       paddingHorizontal: 15,
-      backgroundColor: isDark ? "#1e293b" : "#f0f4ff",
+      backgroundColor: isDark ? "#000000" : "#f0f4ff",
       borderWidth: 1,
       borderColor: isDark ? "#334155" : "#eee",
       borderRadius: 12,
@@ -147,8 +147,8 @@ const indexStyles = (isDark: boolean) =>
     },
 
     categoryCard: {
-      backgroundColor: isDark ? "#1e293b" : "#f0f4ff",
-      borderColor: isDark ? "#334155" : "#eee",
+      backgroundColor: isDark ? "#000000" : "#f0f4ff",
+      borderColor: isDark ? "#000000" : "#eee",
       padding: 16,
       borderWidth: 1,
       borderRadius: 12,
