@@ -10,7 +10,6 @@ export async function registerForPushNotificationsAsync() {
 
     const { status: existingStatus } =
       await Notifications.getPermissionsAsync();
-    alert(existingStatus);
     let finalStatus = existingStatus;
 
     if (existingStatus !== "granted") {
@@ -28,8 +27,6 @@ export async function registerForPushNotificationsAsync() {
         projectId: "be812c0e-2d3f-4ee2-8452-8b51c76af8f3",
       })
     ).data;
-
-    alert(token);
 
     return token;
   } catch (error) {

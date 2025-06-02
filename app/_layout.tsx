@@ -49,23 +49,6 @@ export default function Layout() {
   const router = useRouter();
 
   useEffect(() => {
-  const subscriptionReceived = Notifications.addNotificationReceivedListener(notification => {
-    console.log('Notification Received:', notification);
-    // You can update state, trigger sounds, etc.
-  });
-
-  const subscriptionResponse = Notifications.addNotificationResponseReceivedListener(response => {
-    console.log('User interacted with notification:', response);
-    // You can navigate based on data, etc.
-  });
-
-  return () => {
-    subscriptionReceived.remove();
-    subscriptionResponse.remove();
-  };
-}, []);
-
-  useEffect(() => {
     const checkLoginStatus = async () => {
       try {
         const token = await SecureStore.getItemAsync("token");

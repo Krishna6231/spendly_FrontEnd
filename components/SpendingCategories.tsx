@@ -1,12 +1,16 @@
-// components/SpendingCategories.tsx
-import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Pressable, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
-import { FontAwesome } from '@expo/vector-icons';
-import { Animated } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
-import indexStyles from '@/styles/index.styles';
-import { useTheme } from '@/theme/ThemeContext';
+import React from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  Pressable,
+} from "react-native";
+import { useRouter } from "expo-router";
+import { FontAwesome } from "@expo/vector-icons";
+import { Animated } from "react-native";
+import indexStyles from "@/styles/index.styles";
+import { useTheme } from "@/theme/ThemeContext";
 
 interface SpendingCategoriesProps {
   loading: boolean;
@@ -15,17 +19,16 @@ interface SpendingCategoriesProps {
   blinkingBorder: Animated.Value;
 }
 
-
-const SpendingCategories: React.FC<SpendingCategoriesProps> = ({ 
-  loading, 
-  thisMonthExpenseData, 
-  categoryLimitMap,  
-  blinkingBorder 
+const SpendingCategories: React.FC<SpendingCategoriesProps> = ({
+  loading,
+  thisMonthExpenseData,
+  categoryLimitMap,
+  blinkingBorder,
 }) => {
   const router = useRouter();
   const { theme } = useTheme();
-    const isDark = theme === 'dark';
-    const styles = indexStyles(isDark);
+  const isDark = theme === "dark";
+  const styles = indexStyles(isDark);
 
   return (
     <View style={styles.categoryCard}>
@@ -72,9 +75,7 @@ const SpendingCategories: React.FC<SpendingCategoriesProps> = ({
           </View>
         ) : thisMonthExpenseData.length === 0 ? (
           <View style={{ alignItems: "center", marginTop: 40 }}>
-            <Text
-              style={{ fontSize: 16, color: "#555", textAlign: "center" }}
-            >
+            <Text style={{ fontSize: 16, color: "#555", textAlign: "center" }}>
               Looks like your wallet’s been on vacation this month! 🏖️{"\n\n"}
               No expenses yet — saving pro or just broke? 😄
             </Text>
@@ -162,37 +163,43 @@ const SpendingCategories: React.FC<SpendingCategoriesProps> = ({
                       </Text>
                     </View>
 
-                    {/* Progress Bar */}
-                    <View style={styles.progressBarOut}>
-                      <View
-                        style={{
-                          width: `${Math.min(percentage, 100)}%`,
-                          backgroundColor: barColor,
-                          height: "100%",
-                          borderRadius: 5,
-                        }}
-                      />
-                    </View>
-                    {isOverspent ? (
-                      <Text
-                        style={{
-                          marginTop: 4,
-                          fontSize: 12,
-                          color: "#B71C1C",
-                        }}
-                      >
-                        Whoa! You overspent 🚨
-                      </Text>
-                    ) : (
-                      <Text
-                        style={{
-                          marginTop: 4,
-                          fontSize: 12,
-                          color: isDark ? "#cbd5e1" : "#666",
-                        }}
-                      >
-                        Limit: ₹{limit} ({Math.floor(percentage)}%)
-                      </Text>
+                    {item.name !== "Subscriptions" && (
+                      <>
+                        {/* Progress Bar */}
+                        <View style={styles.progressBarOut}>
+                          <View
+                            style={{
+                              width: `${Math.min(percentage, 100)}%`,
+                              backgroundColor: barColor,
+                              height: "100%",
+                              borderRadius: 5,
+                            }}
+                          />
+                        </View>
+
+                        {/* Limit Statement */}
+                        {isOverspent ? (
+                          <Text
+                            style={{
+                              marginTop: 4,
+                              fontSize: 12,
+                              color: "#B71C1C",
+                            }}
+                          >
+                            Whoa! You overspent 🚨
+                          </Text>
+                        ) : (
+                          <Text
+                            style={{
+                              marginTop: 4,
+                              fontSize: 12,
+                              color: isDark ? "#cbd5e1" : "#666",
+                            }}
+                          >
+                            Limit: ₹{limit} ({Math.floor(percentage)}%)
+                          </Text>
+                        )}
+                      </>
                     )}
                   </Animated.View>
                 </Pressable>

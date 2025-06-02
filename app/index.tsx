@@ -242,7 +242,7 @@ export default function Dashboard() {
               data={thisMonthExpenseData.map((item) => ({
                 key: item.name,
                 value: item.amount,
-                color: item.color,
+                color: item.name === "Subscriptions" ? "#555" : item.color,
               }))}
               size={220}
               strokeWidth={40}
