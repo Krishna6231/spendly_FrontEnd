@@ -8,11 +8,9 @@ import {
   LogBox,
   RefreshControl,
 } from "react-native";
-import { useRouter } from "expo-router";
 import { AppDispatch } from "@/redux/store";
 import CustomDropdown from "@/components/CustomDropdown";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
-import * as SecureStore from "expo-secure-store";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { Modalize } from "react-native-modalize";
@@ -23,19 +21,19 @@ import { useDispatch } from "react-redux";
 import {
   addExpenseAsync,
   fetchExpensesAsync,
-} from "../redux/slices/expenseSlice";
+} from "@/redux/slices/expenseSlice";
 import { fetchAnalytics } from "@/redux/slices/analyticsSlice";
-import Fab from "../components/Fab";
-import { useTheme } from "../theme/ThemeContext";
+import Fab from "@/components/Fab";
+import { useTheme } from "@/context/ThemeContext";
 import RingChart from "@/components/RingChart";
 import SpendingCategories from "@/components/SpendingCategories";
+import { useAuth } from "@/context/AuthContext";
 
 LogBox.ignoreLogs([
   "VirtualizedLists should never be nested inside plain ScrollViews",
 ]);
 
 export default function Dashboard() {
-  const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
   const modalRef = useRef<Modalize>(null);
   const [category, setCategory] = useState("");
@@ -44,7 +42,7 @@ export default function Dashboard() {
   const [date, setDate] = useState(new Date());
   const [note, setNote] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const { accessToken, userData: user } = useAuth();
   const dispatch = useDispatch<AppDispatch>();
   const { expenses, loading } = useSelector(
     (state: RootState) => state?.expenses
@@ -58,16 +56,8 @@ export default function Dashboard() {
   const styles = indexStyles(isDark);
 
   useEffect(() => {
-    const getUserDataAndExpenses = async () => {
-      const userString = await SecureStore.getItemAsync("userData");
-      if (userString) {
-        const parsedUser = JSON.parse(userString);
-        setUser(parsedUser);
-        dispatch(fetchExpensesAsync(parsedUser.id));
-        dispatch(fetchAnalytics(parsedUser.id));
-      }
-    };
-    getUserDataAndExpenses();
+    dispatch(fetchExpensesAsync());
+    dispatch(fetchAnalytics());
   }, []);
 
   useEffect(() => {
@@ -97,9 +87,9 @@ export default function Dashboard() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    if (user?.id) {
-      await dispatch(fetchExpensesAsync(user.id));
-      await dispatch(fetchAnalytics(user.id));
+    if (accessToken) {
+      await dispatch(fetchExpensesAsync());
+      await dispatch(fetchAnalytics());
     }
     setRefreshing(false);
   };
@@ -167,28 +157,27 @@ export default function Dashboard() {
     }
 
     try {
-      const formattedDate = date.toISOString();
-      const expensePayload = {
-        category,
-        date: formattedDate,
-        amount: parseFloat(amount),
-        id: user?.id,
-        note: note,
-      };
+        const formattedDate = date.toISOString();
+        const expensePayload = {
+          category,
+          date: formattedDate,
+          amount: parseFloat(amount),
+          note: note,
+        };
 
-      const result = await dispatch(addExpenseAsync(expensePayload));
+        const result = await dispatch(addExpenseAsync(expensePayload));
 
-      if (addExpenseAsync.fulfilled.match(result)) {
-        Alert.alert("Success", "Expense is added!!");
-        dispatch(fetchAnalytics(user?.id));
-        closeAddExpenseModal();
-        setCategory("");
-        setAmount("");
-        setDate(new Date());
-        setNote("");
-      } else {
-        Alert.alert("Error", "Failed to add expense");
-      }
+        if (addExpenseAsync.fulfilled.match(result)) {
+          Alert.alert("Success", "Expense is added!!");
+          closeAddExpenseModal();
+          setCategory("");
+          setAmount("");
+          setDate(new Date());
+          setNote("");
+          dispatch(fetchAnalytics());
+        } else {
+          Alert.alert("Error", "Failed to add expense");
+        }
     } catch (error) {
       console.error("Add expense error:", error);
       Alert.alert("Error", "Something went wrong. Please try again.");
@@ -197,7 +186,6 @@ export default function Dashboard() {
 
   return (
     <View style={styles.container}>
-      {/* RefreshControl wrapping the entire page */}
       <RefreshControl
         refreshing={refreshing}
         onRefresh={onRefresh}
@@ -205,10 +193,9 @@ export default function Dashboard() {
         colors={["#4e9bde"]}
         style={{ flex: 1 }}
       >
-        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Hi, {user?.name} 👋</Text>
-          <TouchableOpacity onPress={() => router.push("/profile")}>
+          <TouchableOpacity>
             <Ionicons
               name="person-circle-outline"
               size={38}
@@ -217,7 +204,6 @@ export default function Dashboard() {
           </TouchableOpacity>
         </View>
 
-        {/* User Summary */}
         <View style={styles.userSummaryContainer}>
           <View style={{ alignSelf: "center" }}>
             <Text style={styles.totalSpentLabel}>Total Spent This Month</Text>
@@ -227,7 +213,6 @@ export default function Dashboard() {
           </View>
         </View>
 
-        {/* Ring Chart or Empty State */}
         {loading ? (
           <View
             style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
@@ -264,7 +249,6 @@ export default function Dashboard() {
         )}
       </RefreshControl>
 
-      {/* Categories */}
       <SpendingCategories
         loading={loading}
         thisMonthExpenseData={thisMonthExpenseData}
@@ -272,14 +256,8 @@ export default function Dashboard() {
         blinkingBorder={blinkingBorder}
       />
 
-      {/* Add Expense Button */}
-      <Fab
-        onAddExpense={openAddExpenseModal}
-        onAddCategory={() => router.push("/category")}
-        goToAnalytics={() => router.push("/analytics")}
-      />
+      <Fab onAddExpense={openAddExpenseModal} />
 
-      {/* Bottom Sheet Modal */}
       <Modalize
         ref={modalRef}
         adjustToContentHeight

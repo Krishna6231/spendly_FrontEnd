@@ -1,15 +1,22 @@
-import { useTheme } from "@/theme/ThemeContext";
+import RingStyles from "@/styles/ringchart.styles";
+import { useTheme } from "@/context/ThemeContext";
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   Pressable,
   ActivityIndicator,
   FlatList,
   Dimensions,
 } from "react-native";
 import Svg, { G, Circle, Path } from "react-native-svg";
+import Animated, {
+  useAnimatedProps,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+
+const AnimatedPath = Animated.createAnimatedComponent(Path);
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -85,19 +92,33 @@ const MemoizedPath = React.memo(
     opacity: number;
     onPress: () => void;
     accessibilityLabel: string;
-  }) => (
-    <Path
-      d={path}
-      stroke={color}
-      strokeWidth={strokeWidth}
-      fill="none"
-      strokeLinecap="butt"
-      opacity={opacity}
-      onPress={onPress}
-      accessible
-      accessibilityLabel={accessibilityLabel}
-    />
-  )
+  }) => {
+    const animatedStrokeWidth = useSharedValue(strokeWidth);
+    const animatedOpacity = useSharedValue(opacity);
+
+    useEffect(() => {
+      animatedStrokeWidth.value = withTiming(strokeWidth, { duration: 300 });
+      animatedOpacity.value = withTiming(opacity, { duration: 300 });
+    }, [strokeWidth, opacity]);
+
+    const animatedProps = useAnimatedProps(() => ({
+      strokeWidth: animatedStrokeWidth.value,
+      opacity: animatedOpacity.value,
+    }));
+
+    return (
+      <AnimatedPath
+        d={path}
+        stroke={color}
+        fill="none"
+        strokeLinecap="butt"
+        animatedProps={animatedProps}
+        onPress={onPress}
+        accessible
+        accessibilityLabel={accessibilityLabel}
+      />
+    );
+  }
 );
 
 const RingChart: React.FC<Props> = ({
@@ -112,6 +133,7 @@ const RingChart: React.FC<Props> = ({
 
   const { theme } = useTheme();
   const isDark = theme === "dark";
+  const styles = RingStyles(isDark);
 
   useEffect(() => {
     if (data.length > 0) {
@@ -238,51 +260,5 @@ const RingChart: React.FC<Props> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 10,
-  },
-  loadingContainer: {
-    height: 300,
-    justifyContent: "center",
-  },
-  chartContainer: {
-    position: "relative",
-  },
-  categoryScrollContainer: {
-    marginTop: 5,
-    paddingHorizontal: 10,
-    justifyContent: "center",
-  },
-  categoryItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    alignSelf: "flex-start",
-    borderRadius: 10,
-    backgroundColor: "#f0f0f0",
-    marginHorizontal: 5,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-  },
-  activeItem: {
-    borderWidth: 1,
-    borderColor: "#00bcd4",
-    backgroundColor: "#e0f7fa",
-  },
-  squareColor: {
-    width: 12,
-    height: 12,
-    borderRadius: 4,
-    marginRight: 8,
-  },
-  label: {
-    fontSize: 12,
-    fontWeight: "800",
-  },
-});
 
 export default React.memo(RingChart);

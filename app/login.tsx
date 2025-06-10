@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -14,8 +14,8 @@ import { Snackbar } from "react-native-paper";
 import { useRouter } from "expo-router";
 import axios from "axios";
 import LottieView from "lottie-react-native";
-import * as SecureStore from "expo-secure-store";
 import { registerForPushNotificationsAsync } from "../utils/notifications";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -24,6 +24,8 @@ export default function Login() {
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarColor, setSnackbarColor] = useState("#000");
+
+  const { login } = useAuth();
 
   const showSnackbar = (message: string, color: string = "#000") => {
     setSnackbarMessage(message);
@@ -38,23 +40,22 @@ export default function Login() {
 
     try {
       const response = await axios.post(
-        "https://api.moneynut.co.in/auth/login",
+        "http://192.168.0.105:3000/auth/login",
         {
           email,
           password,
         }
       );
 
-      const { refreshToken, user } = response.data;
+      const { accessToken, refreshToken, user } = response.data;
 
-      await SecureStore.setItemAsync("token", refreshToken);
-      await SecureStore.setItemAsync("userData", JSON.stringify(user));
+      await login(accessToken, refreshToken, user);
 
       try {
         const expoPushToken = await registerForPushNotificationsAsync();
         if (expoPushToken) {
           try {
-            await axios.post("https://api.moneynut.co.in/auth/push-token", {
+            await axios.post("http://192.168.0.105:3000/auth/push-token", {
               userid: user.id,
               expoPushToken: expoPushToken,
             });
@@ -72,7 +73,7 @@ export default function Login() {
       }
 
       showSnackbar("Login successful...", "black");
-      setTimeout(() => router.replace("/"), 300);
+      setTimeout(() => router.replace("/tabs"), 300);
     } catch (error: any) {
       const msg = error?.response?.data?.message || "Login failed. Try again.";
       showSnackbar(msg, "red");

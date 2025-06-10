@@ -4,7 +4,7 @@ const analyticsStyles = (isDark: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: isDark ? "#121212" : "#f8f9fa",
+      backgroundColor: isDark ? "black" : "#f8f9fa",
       padding: 16,
     },
     header: {
@@ -85,7 +85,7 @@ const analyticsStyles = (isDark: boolean) =>
       backgroundColor: isDark ? "#1e1e1e" : "#fff",
       borderRadius: 16,
       padding: 16,
-      marginTop: 16,
+      marginVertical: 20,
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,

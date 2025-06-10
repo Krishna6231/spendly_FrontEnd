@@ -1,16 +1,10 @@
 import React from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  Pressable,
-} from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
 import { Animated } from "react-native";
 import indexStyles from "@/styles/index.styles";
-import { useTheme } from "@/theme/ThemeContext";
+import { useTheme } from "@/context/ThemeContext";
 
 interface SpendingCategoriesProps {
   loading: boolean;
@@ -42,14 +36,14 @@ const SpendingCategories: React.FC<SpendingCategoriesProps> = ({
         <Text style={styles.sectionTitle}>Spending Categories</Text>
 
         <TouchableOpacity
-          onPress={() => router.push("/history")}
+          onPress={() => router.push("/tabs/history")}
           style={{ flexDirection: "row", alignItems: "center" }}
           activeOpacity={0.5}
         >
           <FontAwesome
             name="history"
             size={16}
-            color={isDark ? "#cbd5e1" : "#333"}
+            color={isDark ? "white" : "#333"}
             style={{ marginRight: 4, marginBottom: 10 }}
           />
           <Text style={[styles.sectionTitle, { fontSize: 16 }]}>History</Text>
@@ -105,15 +99,7 @@ const SpendingCategories: React.FC<SpendingCategoriesProps> = ({
               });
 
               return (
-                <Pressable
-                  key={index}
-                  onPress={() =>
-                    router.push({
-                      pathname: `/expenses/[name]`,
-                      params: { name: item.name },
-                    })
-                  }
-                >
+                <View key={index}>
                   <Animated.View
                     style={[
                       {
@@ -129,7 +115,7 @@ const SpendingCategories: React.FC<SpendingCategoriesProps> = ({
                           inputRange: [0, 1],
                           outputRange: [0, 10],
                         }),
-                        backgroundColor: isDark ? "#4e5971" : "#fff",
+                        backgroundColor: isDark ? "#1a1a1a" : "#fff",
                         elevation:
                           percentage >= 70
                             ? blinkingBorder.interpolate({
@@ -171,7 +157,7 @@ const SpendingCategories: React.FC<SpendingCategoriesProps> = ({
                             style={{
                               width: `${Math.min(percentage, 100)}%`,
                               backgroundColor: barColor,
-                              height: "100%",
+                              height: "90%",
                               borderRadius: 5,
                             }}
                           />
@@ -202,7 +188,7 @@ const SpendingCategories: React.FC<SpendingCategoriesProps> = ({
                       </>
                     )}
                   </Animated.View>
-                </Pressable>
+                </View>
               );
             })
         )}

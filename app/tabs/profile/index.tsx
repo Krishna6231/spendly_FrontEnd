@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -10,67 +10,50 @@ import {
 } from "react-native";
 import { profileStyles } from "@/styles/profile.styles";
 import { Feather, Ionicons } from "@expo/vector-icons";
-import * as SecureStore from "expo-secure-store";
-import axios from "axios";
 import { useRouter } from "expo-router";
-import { useTheme } from "@/theme/ThemeContext";
+import { useTheme } from "@/context/ThemeContext";
+import { useAuth } from "@/context/AuthContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import api from "@/utils/api";
 
 const Profile = () => {
-  const [user, setUser] = useState<any>(null);
   const router = useRouter();
-  const animatedValue = useRef(new Animated.Value(0)).current;
   const { theme, toggleTheme } = useTheme();
-
   const isDark = theme === "dark";
   const styles = profileStyles(isDark);
+  const animatedValue = useRef(new Animated.Value(0)).current;
+  const { logout, userData: user } = useAuth();
 
   useEffect(() => {
     Animated.spring(animatedValue, {
       toValue: isDark ? 1 : 0,
       useNativeDriver: false,
-      stiffness: 100, // How "stiff" the spring is (higher = faster snap)
-      damping: 13, // How much it resists oscillation (lower = more bouncy)
-      mass: 1, // How "heavy" the object feels
+      stiffness: 100,
+      damping: 13,
+      mass: 1,
     }).start();
   }, [isDark]);
 
   const translateX = animatedValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [2, 39], // thumb movement left to right
+    outputRange: [2, 39],
   });
 
-  useEffect(() => {
-    const getUser = async () => {
-      const userString = await SecureStore.getItemAsync("userData");
+ const handleLogout = async () => {
+  try {
+    const refreshToken = await AsyncStorage.getItem("refreshToken");
 
-      if (userString) {
-        const parsedUser = JSON.parse(userString);
-        setUser(parsedUser);
-      }
-    };
-    getUser();
-  }, []);
-
-  const handleLogout = async () => {
-    try {
-      const refreshToken = await SecureStore.getItemAsync("token");
-
-      if (refreshToken) {
-        const res = await axios.post("https://api.moneynut.co.in/auth/logout", {
-          refreshToken: refreshToken,
-          userid: user?.id,
-        });
-      }
-
-      await SecureStore.deleteItemAsync("token");
-      await SecureStore.deleteItemAsync("userData");
-
-      router.replace("/landing");
-    } catch (error) {
-      console.error("Error during logout:", error);
-      Alert.alert("Logout Error", "Something went wrong while logging out.");
+    if (refreshToken) {
+      await api.post("/auth/logout", { refreshToken });
     }
-  };
+
+    await logout();
+    router.replace("/landing");
+  } catch (error) {
+    console.error("Error during logout:", error);
+    Alert.alert("Logout Error", "Something went wrong while logging out.");
+  }
+};
 
   return (
     <View style={styles.container}>
@@ -97,7 +80,7 @@ const Profile = () => {
           <Text style={styles.sectionTitle}>Account</Text>
           <TouchableOpacity
             style={styles.row}
-            onPress={() => router.push("/edit-profile")}
+            onPress={() => router.push("/tabs/profile/edit-profile")}
           >
             <Feather
               name="user"
@@ -200,7 +183,7 @@ const Profile = () => {
           <Text style={styles.sectionTitle}>About</Text>
           <TouchableOpacity
             style={styles.row}
-            onPress={() => router.push("/privacy-policy")}
+            onPress={() => router.push("/tabs/profile/privacy-policy")}
           >
             <Feather
               name="lock"
@@ -211,7 +194,7 @@ const Profile = () => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.row}
-            onPress={() => router.push("/tnc")}
+            onPress={() => router.push("/tabs/profile/tnc")}
           >
             <Feather
               name="file-text"
@@ -229,13 +212,14 @@ const Profile = () => {
             <Text style={styles.rowText}>Version 1.0.0</Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
 
-      {/* Logout Button */}
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Feather name="log-out" size={20} color="#ef4444" />
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
+        <View style={styles.section}>
+          <TouchableOpacity style={styles.row} onPress={handleLogout}>
+            <Feather name="log-out" size={22} color="#ef4444" />
+            <Text style={styles.logoutText}> Logout</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </View>
   );
 };

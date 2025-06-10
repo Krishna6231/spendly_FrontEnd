@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
-  Dimensions,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -35,7 +34,7 @@ export default function Signup() {
 
     try {
       setLoading(true);
-      await axios.post('https://api.moneynut.co.in/auth/signup', {
+      await axios.post('http://192.168.0.105:3000/auth/signup', {
         name,
         email,
         password,

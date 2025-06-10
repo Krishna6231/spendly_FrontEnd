@@ -1,12 +1,12 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import axios from "axios";
-import * as SecureStore from "expo-secure-store";
+import api from "@/utils/api";
 
 type Expense = {
   id: string;
   category: string;
   amount: number;
   date: string;
+  note: string;
 };
 
 type CategoryItem = {
@@ -35,19 +35,13 @@ const initialState: ExpenseState = {
   loading: false,
 };
 
-const getAccessToken = async () => await SecureStore.getItemAsync("token");
-
 // ─── Async Thunks ─────────────────────────────────────────────────────
 
 export const fetchExpensesAsync = createAsyncThunk(
   "expenses/fetchExpenses",
-  async (userId: string, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const token = await getAccessToken();
-      const response = await axios.get(
-        `https://api.moneynut.co.in/expense/user?userid=${userId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.get("/expense/user");
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || error.message);
@@ -57,15 +51,25 @@ export const fetchExpensesAsync = createAsyncThunk(
 
 export const addExpenseAsync = createAsyncThunk(
   "expenses/addExpense",
-  async (expensePayload: Expense, { rejectWithValue }) => {
+  async (
+    payload: { category: string; amount: number; date: string; note: string },
+    { rejectWithValue }
+  ) => {
     try {
-      const token = await getAccessToken();
-      const response = await axios.post(
-        "https://api.moneynut.co.in/expense/add",
-        expensePayload,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.post("/expense/add", payload);
       return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const deleteExpenseAsync = createAsyncThunk(
+  "expenses/deleteExpense",
+  async (payload: { expenseId: string }, { rejectWithValue }) => {
+    try {
+      await api.delete(`/expense/delete?expenseId=${payload.expenseId}`);
+      return payload.expenseId;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || error.message);
     }
@@ -75,21 +79,11 @@ export const addExpenseAsync = createAsyncThunk(
 export const addCategoryAsync = createAsyncThunk(
   "expenses/addCategory",
   async (
-    payload: {
-      user_id: string;
-      category: string;
-      limit: number;
-      color: string;
-    },
+    payload: { category: string; limit: number; color: string },
     { rejectWithValue }
   ) => {
     try {
-      const token = await getAccessToken();
-      const response = await axios.post(
-        "https://api.moneynut.co.in/expense/add-category",
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.post("/expense/add-category", payload);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || error.message);
@@ -99,37 +93,9 @@ export const addCategoryAsync = createAsyncThunk(
 
 export const deleteCategoryAsync = createAsyncThunk(
   "expenses/deleteCategory",
-  async (
-    payload: { user_id: string; category: string },
-    { rejectWithValue }
-  ) => {
+  async (payload: { category: string }, { rejectWithValue }) => {
     try {
-      const token = await getAccessToken();
-      const response = await axios.post(
-        "https://api.moneynut.co.in/expense/delete-category",
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data || error.message);
-    }
-  }
-);
-
-export const deleteSubscriptionAsync = createAsyncThunk(
-  "expenses/deleteSubscription",
-  async (
-    payload: { user_id: string; subscription: string },
-    { rejectWithValue }
-  ) => {
-    try {
-      const token = await getAccessToken();
-      const response = await axios.post(
-        "https://api.moneynut.co.in/expense/delete-subscription",
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.post("/expense/delete-category", payload);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || error.message);
@@ -140,21 +106,23 @@ export const deleteSubscriptionAsync = createAsyncThunk(
 export const editCategoryAsync = createAsyncThunk(
   "expenses/editCategory",
   async (
-    payload: {
-      user_id: string;
-      category: string;
-      limit: number;
-      color: string;
-    },
+    payload: { category: string; limit: number; color: string },
     { rejectWithValue }
   ) => {
     try {
-      const token = await getAccessToken();
-      const response = await axios.put(
-        "https://api.moneynut.co.in/expense/edit-category",
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.put("/expense/edit-category", payload);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const deleteSubscriptionAsync = createAsyncThunk(
+  "expenses/deleteSubscription",
+  async (payload: { subscription: string }, { rejectWithValue }) => {
+    try {
+      const response = await api.post("/expense/delete-subscription", payload);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || error.message);
@@ -165,21 +133,11 @@ export const editCategoryAsync = createAsyncThunk(
 export const addSubscriptionAsync = createAsyncThunk(
   "expenses/addSubscription",
   async (
-    payload: {
-      user_id: string;
-      subscription: string;
-      amount: number;
-      autopay_date: number;
-    },
+    payload: { subscription: string; amount: number; autopay_date: number },
     { rejectWithValue }
   ) => {
     try {
-      const token = await getAccessToken();
-      const response = await axios.post(
-        "https://api.moneynut.co.in/expense/add-subscription",
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.post("/expense/add-subscription", payload);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || error.message);
@@ -190,41 +148,12 @@ export const addSubscriptionAsync = createAsyncThunk(
 export const editSubscriptionAsync = createAsyncThunk(
   "expenses/editSubscription",
   async (
-    payload: {
-      user_id: string;
-      subscription: string;
-      amount: number;
-      autopay_date: number;
-    },
+    payload: { subscription: string; amount: number; autopay_date: number },
     { rejectWithValue }
   ) => {
     try {
-      const token = await getAccessToken();
-      const response = await axios.put(
-        "https://api.moneynut.co.in/expense/edit-subscription",
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.put("/expense/edit-subscription", payload);
       return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data || error.message);
-    }
-  }
-);
-
-export const deleteExpenseAsync = createAsyncThunk(
-  "expenses/deleteExpense",
-  async (
-    payload: { expenseId: string; userId: string },
-    { rejectWithValue }
-  ) => {
-    try {
-      const token = await getAccessToken();
-      await axios.delete(
-        `https://api.moneynut.co.in/expense/delete?expenseId=${payload.expenseId}&userId=${payload.userId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      return payload.expenseId;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || error.message);
     }

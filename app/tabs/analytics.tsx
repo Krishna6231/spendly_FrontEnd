@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -17,7 +17,7 @@ import { RootState } from "@/redux/store";
 import { useRouter } from "expo-router";
 import { format, subDays } from 'date-fns';
 import analyticsStyles from "@/styles/analytics.styles";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "@/context/ThemeContext";
 
 const AnalyticsScreen = () => {
   const analytics = useSelector(
@@ -52,14 +52,10 @@ const AnalyticsScreen = () => {
         />
       </TouchableOpacity>
       <ScrollView style={styles.container}>
-        {/* Header */}
-
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Spending Analytics</Text>
-          <Ionicons name="analytics" size={24} color="#4b7bec" />
         </View>
 
-        {/* Highlight Cards - 2 rows with 2 cards each */}
         <View style={styles.cardRow}>
           {/* Total Spent Card */}
           <View style={[styles.card, styles.cardPurple, styles.halfWidthCard]}>
@@ -142,7 +138,7 @@ const AnalyticsScreen = () => {
                   ? `rgba(255, 255, 255, ${opacity})`
                   : `rgba(0, 0, 0, ${opacity})`,
               propsForDots: {
-                r: "3",
+                r: "2",
                 strokeWidth: "2",
                 stroke: isDark ? "#82b1ff" : "#4b7bec", // lighter blue in dark mode
               },
@@ -154,7 +150,6 @@ const AnalyticsScreen = () => {
               fillShadowGradientFromOpacity: 0.3,
               fillShadowGradientToOpacity: 0.05,
             }}
-            bezier
             style={{
               marginVertical: 8,
               borderRadius: 16,
@@ -185,11 +180,6 @@ const AnalyticsScreen = () => {
             </Text>
           </View>
         </View>
-
-        {/* <View style={styles.chartContainer}>
-          <Text style={styles.sectionTitle}>Top Categories This Month</Text>
-          <ChartWithNavigation/>
-        </View>  */}
       </ScrollView>
     </>
   );

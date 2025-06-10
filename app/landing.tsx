@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import LottieView from 'lottie-react-native';
@@ -7,7 +7,7 @@ export default function LandingPage() {
   const router = useRouter();
 
   const handleStart = () => {
-    router.replace('/login'); // or '/signup' if you prefer
+    router.replace('/login');
   };
 
   return (

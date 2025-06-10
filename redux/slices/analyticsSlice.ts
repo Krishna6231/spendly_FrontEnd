@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import api from "@/utils/api";
 
 interface AnalyticsState {
   analytics: any;
@@ -14,20 +14,22 @@ const initialState: AnalyticsState = {
 };
 
 export const fetchAnalytics = createAsyncThunk(
-  'analytics/fetchAnalytics',
-  async (userId: string, { rejectWithValue }) => {
+  "analytics/fetchAnalytics",
+  async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`https://api.moneynut.co.in/analytics/user?userid=${userId}`);
+      const response = await api.get("/analytics/user");
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch analytics');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch analytics"
+      );
     }
   }
 );
 
 // Slice
 const analyticsSlice = createSlice({
-  name: 'analytics',
+  name: "analytics",
   initialState,
   reducers: {},
   extraReducers: (builder) => {

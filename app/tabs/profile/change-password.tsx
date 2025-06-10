@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "@/context/ThemeContext";
 import {
   View,
   Text,
@@ -11,10 +11,10 @@ import {
   Modal,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
-import * as SecureStore from "expo-secure-store";
-import axios from "axios";
+import { useState } from "react";
+import api from "@/utils/api";
 import { Snackbar, Provider as PaperProvider } from "react-native-paper";
+import { useAuth } from "@/context/AuthContext";
 
 export default function ChangePasswordScreen() {
   const router = useRouter();
@@ -25,8 +25,7 @@ export default function ChangePasswordScreen() {
   const [newPass, setNewPass] = useState("");
   const [confirmPass, setConfirmPass] = useState("");
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [token, setToken] = useState<string | null>();
+  const { accessToken, userData: user } = useAuth();
 
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -34,38 +33,14 @@ export default function ChangePasswordScreen() {
 
   const isValid = oldPass && newPass && confirmPass && newPass === confirmPass;
 
-  useEffect(() => {
-    const getUserData = async () => {
-      const userString = await SecureStore.getItemAsync("userData");
-      const this_token = await SecureStore.getItemAsync("token");
-      if (userString) {
-        const parsedUser = JSON.parse(userString);
-        setUser(parsedUser);
-      }
-      if (this_token) {
-        setToken(this_token);
-      }
-    };
-    getUserData();
-  }, []);
-
   const handleChangePassword = async () => {
     if (!user?.id || !isValid) return;
     try {
       setLoading(true);
-      const response = await axios.post(
-        "https://api.moneynut.co.in/auth/change-password",
-        {
-          userId: user.id,
-          oldPassword: oldPass,
-          newPassword: newPass,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await api.post("/auth/change-password", {
+        oldPassword: oldPass,
+        newPassword: newPass,
+      });
 
       if (response.status === 201) {
         setSnackbarVisible(true);
@@ -75,9 +50,7 @@ export default function ChangePasswordScreen() {
         setModalVisible(true);
       }
     } catch (error: any) {
-      setErrorMsg(
-        error?.response?.data?.message || "Something went wrong."
-      );
+      setErrorMsg(error?.response?.data?.message || "Something went wrong.");
       setModalVisible(true);
     } finally {
       setLoading(false);

@@ -1,252 +1,327 @@
-import { StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
+
+const { width } = Dimensions.get("window");
 
 const categoryStyles = (isDark: boolean) =>
   StyleSheet.create({
     container: {
-      flex: 1,
-      backgroundColor: isDark ? "black" : "#f9fafb",
-      padding: 16,
+      flex: 2,
+      backgroundColor: isDark ? "black" : "#fdfdfd",
     },
-    backButton: {
+
+    fab: {
+      zIndex: 10,
       position: "absolute",
-      top: 16,
-      left: 16,
-      zIndex: 1,
-      padding: 8,
+      right: 20,
+      bottom: 20,
+      backgroundColor: isDark ? "#1f2937" : "#4B5563",
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      justifyContent: "center",
+      alignItems: "center",
+      elevation: 5,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
     },
+
+    heading: {
+      paddingHorizontal: 16,
+      paddingTop: 16,
+    },
+
     title: {
       fontSize: 20,
       fontWeight: "bold",
       marginTop: 5,
       marginBottom: 15,
-      color: isDark ? "#f8fafc" : "#333",
+      color: isDark ? "#f1f5f9" : "#333",
       textAlign: "center",
     },
+
+    backButton: {
+      position: "absolute",
+      top: 24,
+      left: 20,
+      zIndex: 1,
+      padding: 0,
+    },
+
+    tabRow: {
+      flexDirection: "row",
+      justifyContent: "space-around",
+      borderBottomWidth: 1,
+      borderColor: isDark ? "#1f2937" : "#e5e7eb",
+      position: "relative",
+    },
+
+    tabButton: {
+      flex: 1,
+      alignItems: "center",
+      paddingVertical: 12,
+    },
+
+    tabText: {
+      color: isDark ? "#9ca3af" : "#6b7280",
+      fontWeight: "600",
+    },
+
+    activeTabText: {
+      color: isDark ? "#f3f4f6" : "#111827",
+    },
+
+    underline: {
+      position: "absolute",
+      bottom: 0,
+      height: 3,
+      width: width / 3,
+      backgroundColor: isDark ? "#f3f4f6" : "#4b5563",
+      borderRadius: 2,
+    },
+
     card: {
+      backgroundColor: isDark ? "#111111" : "#ffffff",
+      borderRadius: 16,
+      paddingVertical: 14,
+      paddingHorizontal: 16,
+      marginBottom: 14,
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
-      backgroundColor: isDark ? "#1e293b" : "#f2f2f2",
-      padding: 10,
-      borderRadius: 12,
-      marginBottom: 12,
       shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.05,
-      shadowRadius: 4,
-      elevation: 2,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.06,
+      shadowRadius: 8,
+      elevation: 3,
     },
-    name: {
-      fontSize: 16,
-      fontWeight: "600",
-      color: isDark ? "#f1f5f9" : "#222",
-    },
-    limit: {
-      fontSize: 14,
-      color: isDark ? "#94a3b8" : "#666",
-      marginTop: 4,
-    },
-    editIconContainer: {
-      justifyContent: "center",
-      alignItems: "center",
-      height: 40,
-      width: 40,
-    },
-    addBtn: {
-      backgroundColor: "#007bff",
-      paddingVertical: 12,
-      paddingHorizontal: 20,
-      borderRadius: 30,
-      alignSelf: "center",
-      marginTop: 20,
-    },
-    addBtnText: {
-      color: "#fff",
-      fontSize: 16,
-      fontWeight: "bold",
-    },
-    modalOverlay: {
-      flex: 1,
-      backgroundColor: "rgba(0,0,0,0.3)",
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    modalContent: {
-      backgroundColor: isDark ? "#1f2937" : "#fff",
-      padding: 20,
-      borderRadius: 12,
-      width: "80%",
-      elevation: 5,
-    },
-    modalContent2: {
-      backgroundColor: isDark ? "#1f2937" : "#fff",
-      padding: 20,
-      borderRadius: 12,
-      width: "90%",
-      elevation: 5,
-    },
-    modalTitle: {
-      fontSize: 18,
-      fontWeight: "600",
-      marginBottom: 12,
-      textAlign: "center",
-      color: isDark ? "#f8fafc" : "#111827",
-    },
-    modalSubTitle2: {
-      fontSize: 16,
-      fontWeight: "600",
-      marginVertical: "auto",
-      color: isDark ? "#e2e8f0" : "#374151",
-    },
-    sc: {
-      flexDirection: "row",
-      marginVertical: 10,
-    },
-    colorBar: {
-      marginHorizontal: "auto",
-      width: "50%",
-      height: 35,
-      borderRadius: 10,
-    },
-    input: {
-      borderWidth: 1,
-      borderColor: isDark ? "#475569" : "#ccc",
-      borderRadius: 8,
-      padding: 10,
-      marginBottom: 12,
-      fontSize: 16,
-      color: isDark ? "#f8fafc" : "#111827",
-      backgroundColor: isDark ? "#334155" : "#fff",
-    },
-    okBtn: {
-      backgroundColor: "#28a745",
-      paddingVertical: 10,
-      borderRadius: 8,
-      alignItems: "center",
-    },
-    okBtnText: {
-      color: "#fff",
-      fontSize: 16,
-      fontWeight: "600",
-    },
-    modalSubTitle: {
-      fontSize: 16,
-      fontWeight: "600",
-      marginTop: 16,
-      marginBottom: 8,
-      color: isDark ? "#e2e8f0" : "#374151",
-    },
-    colorGrid: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      gap: 10,
-      justifyContent: "center",
-      marginBottom: 20,
-    },
-    colorCircle: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      borderColor: isDark ? "#f1f5f9" : "black",
-    },
-    colorIndicator: {
-      width: 16,
-      height: 16,
-      borderRadius: 8,
-      marginRight: 10,
-      marginTop: 5,
-    },
+
     textContainer: {
       flexDirection: "row",
       alignItems: "center",
     },
-    editColorPreviewContainer: {
-      alignItems: "center",
-      marginVertical: 10,
-    },
-    colorPreviewCircle: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      borderWidth: 2,
-      borderColor: isDark ? "#475569" : "#ccc",
-    },
-    delcat: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      marginTop: 20,
-      paddingVertical: 10,
-      paddingHorizontal: 16,
-      borderRadius: 8,
-      borderWidth: 1,
-      borderColor: "red",
-      alignSelf: "center",
-      backgroundColor: "#fff0f0",
-    },
 
-    delcatText: {
-      color: "red",
+    name: {
       fontSize: 16,
       fontWeight: "600",
-    },
-    bottom_buttons: {
-      display: "flex",
-      flexDirection: "row",
-      justifyContent: "space-evenly",
-    },
-    partition: {
-      height: 1,
-      backgroundColor: isDark ? "#444" : "#ccc",
-      marginVertical: 12,
+      color: isDark ? "#e5e7eb" : "#111827",
     },
 
-    toggleRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
+    limit: {
+      fontSize: 13,
+      marginTop: 4,
+      color: isDark ? "#9ca3af" : "#6b7280",
+    },
+
+    editIconContainer: {
+      justifyContent: "center",
       alignItems: "center",
-      paddingHorizontal: 12,
-    },
-    sectionTitle: {
-      fontSize: 18,
-      fontWeight: "600",
-      color: isDark ? "#fff" : "#000",
+      padding: 6,
+      borderRadius: 8,
     },
 
-    subscriptionContainer: {
-      overflow: "hidden",
-      paddingHorizontal: 16,
+    colorIndicator: {
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+      marginRight: 12,
+      marginTop: 4,
+      borderWidth: 1.5,
+      borderColor: isDark ? "#374151" : "#d1d5db",
     },
+
+    screen: {
+      width,
+      padding: 16,
+    },
+
+    emptyText: {
+      textAlign: "center",
+      fontSize: 16,
+      color: isDark ? "#6b7280" : "#9ca3af",
+      marginTop: 24,
+      fontStyle: "italic",
+    },
+
     subscriptionItem: {
+      backgroundColor: isDark ? "#111111" : "#ffffff",
+      paddingVertical: 14,
+      paddingHorizontal: 16,
+      borderRadius: 16,
+      marginBottom: 14,
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
-      paddingVertical: 12,
-      borderBottomWidth: 1,
-      borderBottomColor: isDark ? "#333" : "#eee",
+      elevation: 3,
     },
+
     subName: {
       fontSize: 16,
-      fontWeight: "500",
-      color: isDark ? "#fff" : "#000",
+      fontWeight: "600",
+      color: isDark ? "#e5e7eb" : "#111827",
     },
 
     subDetails: {
-      fontSize: 14,
-      color: isDark ? "#aaa" : "#666",
-      marginTop: 2,
+      fontSize: 13,
+      marginTop: 4,
+      color: isDark ? "#9ca3af" : "#6b7280",
     },
 
     iconRow: {
       flexDirection: "row",
       alignItems: "center",
     },
-    emptyText: {
-      textAlign: "center",
-      color: isDark ? "#999" : "#777",
-      fontStyle: "italic",
-      paddingVertical: 20,
+
+    loanItem: {
+      backgroundColor: isDark ? "#111111" : "#ffffff",
+      paddingVertical: 14,
+      paddingHorizontal: 16,
+      borderRadius: 16,
+      marginBottom: 14,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      elevation: 3,
     },
+
+    loanName: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: isDark ? "#e5e7eb" : "#111827",
+    },
+
+    loanDetails: {
+      fontSize: 13,
+      marginTop: 4,
+      color: isDark ? "#9ca3af" : "#6b7280",
+    },
+
+    italicLabel: {
+      fontStyle: "italic",
+      color: isDark ? "#6b7280" : "#6b7280",
+    },
+
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: isDark
+        ? "rgba(256, 256, 256, 0.2)"
+        : "rgba(0, 0, 0, 0.4)",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+
+    modalContent: {
+      width: "85%",
+      backgroundColor: isDark ? "#111111" : "#fff",
+      padding: 20,
+      borderRadius: 20,
+      elevation: 10,
+    },
+
+    modalTitle: {
+      fontSize: 20,
+      fontWeight: "bold",
+      marginBottom: 12,
+      color: isDark ? "#f1f5f9" : "#333",
+      textAlign: "center",
+    },
+
+    modalSubTitle: {
+      marginTop: 14,
+      marginBottom: 6,
+      fontSize: 14,
+      fontWeight: "600",
+      color: isDark ? "#cbd5e1" : "#555",
+    },
+
+    modalSubTitle2: {
+      fontSize: 13,
+      color: isDark ? "#94a3b8" : "#777",
+      marginBottom: 6,
+    },
+
+    input: {
+      borderWidth: 1,
+      borderColor: isDark ? "#334155" : "#ccc",
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      fontSize: 16,
+      marginVertical: 8,
+      backgroundColor: isDark ? "#1e1e1e" : "#f9f9f9",
+      color: isDark ? "#f1f5f9" : "#000",
+    },
+
+    colorGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      justifyContent: "center",
+      marginVertical: 10,
+    },
+
+    colorCircle: {
+      width: 30,
+      height: 30,
+      borderRadius: 15,
+      margin: 6,
+    },
+
+    colorBar: {
+      width: 40,
+      height: 15,
+      borderRadius: 6,
+      marginTop: -3,
+      marginLeft: 8,
+      borderWidth: 1,
+      borderColor: isDark ? "#475569" : "#ccc",
+    },
+
+    sc: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginTop: 12,
+    },
+
+    okBtn: {
+      marginTop: 20,
+      backgroundColor: isDark ? "#1e293b" : "#007bff",
+      paddingVertical: 12,
+      borderRadius: 10,
+      alignItems: "center",
+    },
+
+    okBtnText: {
+      color: "#fff",
+      fontSize: 16,
+      fontWeight: "600",
+    },
+
+    delcat: {
+      marginTop: 14,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: isDark ? "#2c0a0a" : "#fff0f0",
+      borderWidth: 1,
+      borderColor: "red",
+      paddingVertical: 10,
+      borderRadius: 10,
+    },
+
+    delcatText: {
+      color: "red",
+      fontWeight: "600",
+    },
+
+    modalContent2: {
+      width: "90%",
+      backgroundColor: isDark ? "#111111" : "#fff",
+      padding: 20,
+      borderRadius: 20,
+      elevation: 10,
+    },
+
     dateGrid: {
       flexDirection: "row",
       flexWrap: "wrap",
@@ -259,22 +334,22 @@ const categoryStyles = (isDark: boolean) =>
       width: 40,
       height: 40,
       borderRadius: 20,
-      backgroundColor: "#e5e7eb",
+      backgroundColor: isDark ? "#1f2937" : "#e5e7eb",
       justifyContent: "center",
       alignItems: "center",
     },
 
     selectedDateCircle: {
-      backgroundColor: "#007bff",
+      backgroundColor: isDark ? "#f3f4f6" : "#007bff",
     },
 
     dateText: {
-      color: "#111827",
+      color: isDark ? "#f1f5f9" : "#111827",
       fontWeight: "600",
     },
 
     selectedDateText: {
-      color: "#fff",
+      color: isDark ? "#000" : "#fff",
     },
   });
 

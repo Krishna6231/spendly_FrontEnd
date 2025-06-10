@@ -25,7 +25,8 @@ A cross-platform mobile application for tracking expenses, setting category limi
 - React Navigation
 - React Native Gesture Handler
 - React Native Reanimated
-- SecureStore (for token storage)
+- Expo Notifications
+- AsyncStorage (for token storage)
 - Lottie (for animations)
 
 ---

@@ -1,6 +1,5 @@
-// app/edit-profile.tsx
 import { useRouter } from "expo-router";
-import { useTheme } from "../theme/ThemeContext";
+import { useTheme } from "@/context/ThemeContext";
 import {
   View,
   Text,
@@ -10,48 +9,76 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import * as SecureStore from "expo-secure-store";
+import { useAuth } from "@/context/AuthContext";
+import api from "@/utils/api";
 
 export default function EditProfileScreen() {
   const router = useRouter();
   const { theme } = useTheme();
   const isDark = theme === "dark";
+  const { userData: user, setUserData } = useAuth();
 
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  const [mobile, setMobile] = useState("");
 
   const [initialName, setInitialName] = useState("");
-  const [initialMobile, setInitialMobile] = useState("");
 
   useEffect(() => {
     const loadUser = async () => {
-      const stored = await SecureStore.getItemAsync("userData");
-      if (stored) {
+      if (user) {
         try {
-          const parsed = JSON.parse(stored);
-          setEmail(parsed.email || "");
-          setName(parsed.name || "");
-          setMobile(parsed.mobile || "");
-          setInitialName(parsed.name || "");
-          setInitialMobile(parsed.mobile || "");
+          setEmail(user.email || "");
+          setName(user.name || "");
+          setInitialName(user.name || "");
         } catch (e) {
           console.error("Error parsing userData", e);
         }
       }
     };
     loadUser();
-  }, []);
+  }, [user]);
 
-  const hasChanges = name !== initialName || mobile !== initialMobile;
+  const hasChanges = name !== initialName;
+
+  const updateProfile = async () => {
+  if (!user) return;
+
+  try {
+    const response = await api.post("/auth/update", { name });
+
+    if (response.status === 201) {
+      const updatedUser = { ...user, name };
+      setUserData(updatedUser);
+      setInitialName(name);
+    }
+
+    Alert.alert("Profile updated successfully");
+  } catch (error: any) {
+    console.error(
+      "Failed to update profile",
+      error.response?.data || error.message
+    );
+    Alert.alert("Error", "Could not update your profile.");
+  }
+};
 
   return (
-    <View style={[styles.container, { backgroundColor: isDark ? "black" : "#f9fafb" }]}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: isDark ? "black" : "#f9fafb" },
+      ]}
+    >
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={24} color={isDark ? "white" : "black"} />
+        <Ionicons
+          name="arrow-back"
+          size={24}
+          color={isDark ? "white" : "black"}
+        />
       </TouchableOpacity>
 
       <KeyboardAvoidingView
@@ -65,24 +92,28 @@ export default function EditProfileScreen() {
 
           <Text style={styles.label}>Email</Text>
           <TextInput
-            style={[styles.input, { backgroundColor: isDark ? "#1e293b" : "#e5e7eb", color: isDark ? "white" : "black" }]}
+            style={[
+              styles.input,
+              {
+                backgroundColor: isDark ? "#1e293b" : "#e5e7eb",
+                color: isDark ? "white" : "black",
+              },
+            ]}
             value={email}
             editable={false}
           />
 
           <Text style={styles.label}>Name</Text>
           <TextInput
-            style={[styles.input, { backgroundColor: isDark ? "#1e293b" : "#e5e7eb", color: isDark ? "white" : "black" }]}
+            style={[
+              styles.input,
+              {
+                backgroundColor: isDark ? "#1e293b" : "#e5e7eb",
+                color: isDark ? "white" : "black",
+              },
+            ]}
             value={name}
             onChangeText={setName}
-          />
-
-          <Text style={styles.label}>Mobile</Text>
-          <TextInput
-            style={[styles.input, { backgroundColor: isDark ? "#1e293b" : "#e5e7eb", color: isDark ? "white" : "black" }]}
-            value={mobile}
-            onChangeText={setMobile}
-            keyboardType="phone-pad"
           />
 
           <TouchableOpacity
@@ -95,24 +126,30 @@ export default function EditProfileScreen() {
                     ? "#4ade80"
                     : "#10b981"
                   : isDark
-                    ? "#334155"
-                    : "#d1d5db",
+                  ? "#334155"
+                  : "#d1d5db",
               },
             ]}
-            onPress={() => {
-              console.log("Save changes:", { name, mobile });
-              setInitialName(name);
-              setInitialMobile(mobile);
-            }}
+            onPress={updateProfile}
           >
-            <Text style={{ color: hasChanges ? "white" : "gray", fontWeight: "600" }}>OK</Text>
+            <Text
+              style={{
+                color: hasChanges ? "white" : "gray",
+                fontWeight: "600",
+              }}
+            >
+              OK
+            </Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
 
       <TouchableOpacity
-        style={[styles.passwordButton, { backgroundColor: isDark ? "#334155" : "#e5e7eb" }]}
-        onPress={() => router.push("/change-password")}
+        style={[
+          styles.passwordButton,
+          { backgroundColor: isDark ? "#334155" : "#e5e7eb" },
+        ]}
+        onPress={() => router.push("/tabs/profile/change-password")}
       >
         <Text style={{ color: isDark ? "white" : "black", fontWeight: "600" }}>
           Update Password
