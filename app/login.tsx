@@ -40,7 +40,7 @@ export default function Login() {
 
     try {
       const response = await axios.post(
-        "http://192.168.0.105:3000/auth/login",
+        "https://api.moneynut.co.in/auth/login",
         {
           email,
           password,
@@ -55,7 +55,7 @@ export default function Login() {
         const expoPushToken = await registerForPushNotificationsAsync();
         if (expoPushToken) {
           try {
-            await axios.post("http://192.168.0.105:3000/auth/push-token", {
+            await axios.post("https://api.moneynut.co.in/auth/push-token", {
               userid: user.id,
               expoPushToken: expoPushToken,
             });

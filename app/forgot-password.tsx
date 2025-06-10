@@ -35,7 +35,7 @@ export default function ForgotPasswordScreen() {
 
     try {
       const response = await axios.post(
-        "http://192.168.0.105:3000/auth/forgot-password",
+        "https://api.moneynut.co.in/auth/forgot-password",
         {
           email,
         }

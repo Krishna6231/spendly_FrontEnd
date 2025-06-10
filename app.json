@@ -14,7 +14,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#05001e"
+        "backgroundColor": "#10764e"
       },
       "package": "com.krishna6231.spendly_FrontEnd",
       "permissions": ["*"],
@@ -31,9 +31,9 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
+          "imageWidth": 400,
           "resizeMode": "contain",
-          "backgroundColor": "#05001e"
+          "backgroundColor": "#10764e"
         }
       ],
       "expo-secure-store",
