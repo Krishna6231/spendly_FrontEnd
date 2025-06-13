@@ -33,14 +33,14 @@
     "expo-constants": "~17.0.8",
     "expo-dev-client": "~5.0.20",
     "expo-device": "~7.0.3",
-    "expo-file-system": "^18.1.10",
+    "expo-file-system": "^18.0.12",
     "expo-font": "~13.0.4",
     "expo-haptics": "~14.0.1",
     "expo-linking": "~7.0.5",
     "expo-notifications": "~0.29.14",
     "expo-router": "~4.0.21",
     "expo-secure-store": "~14.0.1",
-    "expo-sharing": "^13.1.5",
+    "expo-sharing": "^13.0.1",
     "expo-splash-screen": "^0.29.24",
     "expo-status-bar": "~2.0.1",
     "expo-symbols": "~0.2.2",
@@ -93,7 +93,8 @@
           "react-native-skeleton-placeholder",
           "base-64",
           "react-native-vector-icons",
-          "recharts"
+          "recharts",
+          "xlsx"
         ]
       }
     }

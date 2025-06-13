@@ -197,7 +197,7 @@ const RingChart: React.FC<Props> = ({
               cx={0}
               cy={0}
               r={radius}
-              stroke="#f0f0f0"
+              stroke={isDark ? "#101010" : "#f0f0f0"}
               strokeWidth={strokeWidth}
               fill="transparent"
             />

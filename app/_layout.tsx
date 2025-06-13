@@ -24,9 +24,11 @@ export default function Layout() {
   return (
     <Provider store={store}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <AuthProvider>
-          <InnerApp />
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <InnerApp />
+          </AuthProvider>
+        </ThemeProvider>
       </GestureHandlerRootView>
     </Provider>
   );
@@ -36,6 +38,7 @@ function InnerApp() {
   const router = useRouter();
   const { accessToken, isLoading } = useAuth();
   const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   useEffect(() => {
     if (!isLoading) {
@@ -48,7 +51,6 @@ function InnerApp() {
   }, [accessToken, isLoading, router]);
 
   if (isLoading) {
-    const isDark = theme === "dark";
     return (
       <View
         style={[
@@ -62,13 +64,16 @@ function InnerApp() {
   }
 
   return (
-    <ThemeProvider>
-      <StatusBar barStyle="light-content" backgroundColor="black" />
+    <>
+      <StatusBar
+        barStyle={isDark ? "light-content" : "dark-content"}
+        backgroundColor={isDark ? "#000000" : "#ffffff"}
+      />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="tabs" />
         <Stack.Screen name="landing" />
       </Stack>
-    </ThemeProvider>
+    </>
   );
 }
 
@@ -77,7 +82,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "white", // or dark mode base
+    backgroundColor: "white",
     zIndex: 999,
   },
   loaderContainer: {

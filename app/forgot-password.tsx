@@ -7,7 +7,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StatusBar,
   StyleSheet,
 } from "react-native";
 import LottieView from "lottie-react-native";
@@ -67,7 +66,6 @@ export default function ForgotPasswordScreen() {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <StatusBar barStyle="dark-content" backgroundColor="white" />
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}

@@ -31,15 +31,17 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 400,
           "resizeMode": "contain",
           "backgroundColor": "#10764e"
         }
       ],
       "expo-secure-store",
-      ["expo-notifications",{
-        "icon" : "./assets/images/icon.png"
-      }]
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

@@ -8,7 +8,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StatusBar,
 } from "react-native";
 import { Snackbar } from "react-native-paper";
 import { useRouter } from "expo-router";
@@ -16,10 +15,12 @@ import axios from "axios";
 import LottieView from "lottie-react-native";
 import { registerForPushNotificationsAsync } from "../utils/notifications";
 import { useAuth } from "@/context/AuthContext";
+import { Feather } from '@expo/vector-icons';
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -27,7 +28,7 @@ export default function Login() {
 
   const { login } = useAuth();
 
-  const showSnackbar = (message: string, color: string = "#000") => {
+  const showSnackbar = (message: string, color = "#000") => {
     setSnackbarMessage(message);
     setSnackbarColor(color);
     setSnackbarVisible(true);
@@ -48,28 +49,18 @@ export default function Login() {
       );
 
       const { accessToken, refreshToken, user } = response.data;
-
       await login(accessToken, refreshToken, user);
 
       try {
         const expoPushToken = await registerForPushNotificationsAsync();
         if (expoPushToken) {
-          try {
-            await axios.post("https://api.moneynut.co.in/auth/push-token", {
-              userid: user.id,
-              expoPushToken: expoPushToken,
-            });
-          } catch (pushError) {
-            console.warn("Failed to send push token:", pushError);
-            // optionally show a non-blocking message or just ignore
-          }
+          await axios.post("https://api.moneynut.co.in/auth/push-token", {
+            userid: user.id,
+            expoPushToken,
+          });
         }
-      } catch (pushTokenError) {
-        console.warn(
-          "Failed to register for push notifications:",
-          pushTokenError
-        );
-        // same as above
+      } catch (e) {
+        console.warn("Push notification setup failed", e);
       }
 
       showSnackbar("Login successful...", "black");
@@ -85,8 +76,6 @@ export default function Login() {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <StatusBar barStyle="dark-content" backgroundColor="white" />
-
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
@@ -101,46 +90,55 @@ export default function Login() {
         />
 
         <View style={styles.form}>
-          <Text style={styles.label}>Email</Text>
           <TextInput
             style={styles.input}
             placeholder="you@example.com"
-            placeholderTextColor="#999"
+            placeholderTextColor="#888"
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
           />
 
-          <Text style={styles.label}>Password</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="••••••••"
-            placeholderTextColor="#999"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
-
-          <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
-            <Text style={styles.loginText}>Login</Text>
-          </TouchableOpacity>
+          <View style={styles.passwordWrapper}>
+            <TextInput
+              style={[styles.input2, { flex: 1 }]}
+              placeholder="Password"
+              placeholderTextColor="#888"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+            />
+            <TouchableOpacity
+              onPress={() => setShowPassword(!showPassword)}
+              style={styles.eyeIcon}
+            >
+              <Feather
+                name={showPassword ? 'eye-off' : 'eye'}
+                size={20}
+                color="#666"
+              />
+            </TouchableOpacity>
+          </View>
 
           <TouchableOpacity
-            onPress={() => router.push("/forgot-password")}
-            style={styles.forgotPassword}
+            style={[styles.button, { backgroundColor: email && password ? '#111' : '#ccc' }]}
+            onPress={handleLogin}
+            disabled={!email || !password}
           >
-            <Text style={styles.forgotPassword}>Forgot Password?</Text>
+            <Text style={styles.buttonText}>Login</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => router.push("/forgot-password")}>
+            <Text style={styles.linkText}>Forgot Password?</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => router.push("/signup")}>
-            <Text style={styles.signUpLink}>
-              Don't have an account?{" "}
-              <Text style={{ fontWeight: "bold" }}>Sign up</Text>
-            </Text>
+            <Text style={styles.linkText}>Don't have an account? <Text style={styles.linkBold}>Sign up</Text></Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
+
       <Snackbar
         visible={snackbarVisible}
         onDismiss={() => setSnackbarVisible(false)}
@@ -159,64 +157,67 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingVertical: 40,
-    paddingHorizontal: 24,
-    justifyContent: "flex-start",
-    alignItems: "center",
+    paddingHorizontal: 20,
   },
   header: {
-    fontSize: 40,
-    fontWeight: "bold",
-    marginBottom: 40,
+    fontSize: 28,
+    fontWeight: "600",
     color: "#111",
-  },
-
-  forgotPassword: {
-    paddingTop: 10,
-    paddingLeft: 30,
-    paddingHorizontal: "auto",
-    color: "#000",
-    fontSize: 15,
-    textDecorationLine: "none",
-    textAlign: "center", // center text horizontally
-    maxWidth: "90%", // restrict max width so it fits nicely
-  },
-
-  form: {
-    width: "100%",
+    textAlign: "center",
+    marginBottom: 20,
   },
   lottie: {
-    width: 260,
-    height: 260,
-    marginBottom: 30,
+    width: 220,
+    height: 220,
+    alignSelf: "center",
+    marginBottom: 24,
   },
-  label: {
-    fontSize: 18,
-    marginBottom: 6,
-    color: "#222",
+  form: {
+    gap: 16,
   },
   input: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
-    fontSize: 16,
+    borderWidth: 1,
+    borderColor: "#ddd",
     paddingVertical: 10,
-    marginBottom: 24,
-    color: "#000",
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    fontSize: 16,
+    color: "#111",
   },
-  loginBtn: {
-    backgroundColor: "#000",
+  input2: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    fontSize: 16,
+    color: "#111",
+  },
+  passwordWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+  },
+  eyeIcon: {
+    paddingHorizontal: 8,
+  },
+  button: {
     paddingVertical: 14,
     borderRadius: 8,
-    marginTop: 8,
+    alignItems: 'center',
   },
-  loginText: {
-    color: "#fff",
-    textAlign: "center",
-    fontSize: 18,
-  },
-  signUpLink: {
-    textAlign: "center",
-    marginTop: 24,
+  buttonText: {
     fontSize: 16,
-    color: "#444",
+    color: '#fff',
+    fontWeight: '500',
+  },
+  linkText: {
+    textAlign: 'center',
+    marginTop: 16,
+    fontSize: 14,
+    color: '#444',
+  },
+  linkBold: {
+    fontWeight: 'bold',
+    color: '#111',
   },
 });

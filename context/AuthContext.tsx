@@ -69,8 +69,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       console.error("Auth check failed:", error);
       await logout();
     } finally {
-      await SplashScreen.hideAsync();
       setIsLoading(false);
+      await SplashScreen.hideAsync();
     }
   };
 
