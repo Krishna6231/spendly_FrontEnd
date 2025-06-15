@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 
 const api = axios.create({
-  baseURL: "https://api.moneynut.co.in",
+  baseURL: "http://192.168.1.4:3000",
 });
 
 // Request interceptor: add access token
@@ -31,7 +31,7 @@ api.interceptors.response.use(
         const refreshToken = await AsyncStorage.getItem("refreshToken");
 
         const response = await axios.post(
-          "https://api.moneynut.co.in/auth/refresh",
+          "http://192.168.1.4:3000/auth/refresh",
           { refreshToken: refreshToken }
         );
 

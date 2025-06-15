@@ -136,6 +136,19 @@ const categoryStyles = (isDark: boolean) =>
       padding: 16,
     },
 
+    hiscatsel: {
+      width: 100,
+      alignItems: "center",
+      paddingHorizontal: 16,
+      paddingVertical: 6,
+      borderRadius: 20,
+    },
+
+    loanstypeselection: {
+      flexDirection: "row",
+      justifyContent: "space-evenly",
+    },
+
     emptyText: {
       textAlign: "center",
       fontSize: 16,
@@ -183,12 +196,6 @@ const categoryStyles = (isDark: boolean) =>
       justifyContent: "space-between",
       alignItems: "center",
       elevation: 3,
-    },
-
-    loanName: {
-      fontSize: 16,
-      fontWeight: "600",
-      color: isDark ? "#e5e7eb" : "#111827",
     },
 
     loanDetails: {
@@ -350,6 +357,45 @@ const categoryStyles = (isDark: boolean) =>
 
     selectedDateText: {
       color: isDark ? "#000" : "#fff",
+    },
+
+    dateInput: {
+      fontSize: 15,
+      color: isDark ? "#f1f5f9" : "#444",
+    },
+
+    radioGroup: {
+      flexDirection: "row",
+      justifyContent: "space-around",
+      marginVertical: 10,
+    },
+
+    radioOption: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+
+    radioCircle: {
+      height: 20,
+      width: 20,
+      borderRadius: 10,
+      borderWidth: 2,
+      borderColor: "#666",
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: 8,
+    },
+
+    radioSelected: {
+      height: 10,
+      width: 10,
+      borderRadius: 5,
+      backgroundColor: "#666",
+    },
+
+    radioLabel: {
+      fontSize: 16,
+      color: isDark ? "#ccc" : "black",
     },
   });
 

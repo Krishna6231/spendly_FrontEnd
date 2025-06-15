@@ -1,0 +1,155 @@
+import { StyleSheet } from "react-native";
+
+const loanStyles = (isDark: boolean) =>
+  StyleSheet.create({
+    loanstypeselection: {
+      flexDirection: "row",
+      justifyContent: "center",
+      marginVertical: 14,
+      gap: 10,
+    },
+    hiscatsel: {
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      borderRadius: 25,
+      backgroundColor: isDark ? "#334155" : "#f3f4f6",
+      elevation: 2,
+    },
+    emptyText: {
+      textAlign: "center",
+      fontSize: 16,
+      fontStyle: "italic",
+      color: isDark ? "#94a3b8" : "#4b5563",
+      marginVertical: 20,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: isDark ? "#475569" : "#d1d5db",
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      fontSize: 16,
+      backgroundColor: isDark ? "#1e293b" : "#f9fafb",
+      color: isDark ? "#f8fafc" : "#111827",
+      marginVertical: 6,
+    },
+    mttext: {
+      fontSize: 14,
+      fontStyle: "italic",
+      color: isDark ? "#f1f5f9" : "#334155",
+      marginBottom: 4,
+    },
+    loanContainer: {
+      backgroundColor: isDark ? "#0f172a" : "#ffffff",
+      borderRadius: 16,
+      padding: 16,
+      marginHorizontal: 16,
+      marginVertical: 10,
+      shadowColor: "#000",
+      shadowOpacity: 0.1,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 2 },
+      elevation: 4,
+    },
+    loanHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    loanName: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: isDark ? "#f1f5f9" : "#111827",
+    },
+    loanAmount: {
+      fontSize: 18,
+      fontWeight: "700",
+      color: isDark ? "#a3e635" : "#15803d",
+    },
+    loanFooter: {
+      marginTop: 6,
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+    loanDate: {
+      fontSize: 12,
+      color: isDark ? "#94a3b8" : "#6b7280",
+    },
+    loanRemaining: {
+      fontSize: 14,
+      fontWeight: "500",
+      color: isDark ? "#facc15" : "#b45309",
+    },
+    installmentsWrapper: {
+      marginTop: 12,
+    },
+    ins: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    installmentBox: {
+      flex: 1,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      backgroundColor: isDark ? "#334155" : "#f3f4f6",
+      borderRadius: 12,
+      padding: 12,
+      marginVertical: 6,
+    },
+    minus: {
+      padding: 8,
+      marginLeft: 8,
+      borderRadius: 999,
+      backgroundColor: isDark ? "#dc2626" : "#fecaca",
+    },
+    installmentDate: {
+      fontSize: 13,
+      color: isDark ? "#fef08a" : "#475569",
+    },
+    installmentAmount: {
+      fontSize: 16,
+      fontWeight: "bold",
+      color: isDark ? "#67e8f9" : "#0f766e",
+    },
+    newInstallmentRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginTop: 10,
+    },
+    inputBox: {
+      flex: 1,
+      padding: 12,
+      borderRadius: 12,
+      backgroundColor: isDark ? "#1e293b" : "#ffffff",
+      borderColor: "#d1d5db",
+      borderWidth: 1,
+      marginRight: 10,
+    },
+    actionsRow: {
+      flexDirection: "row",
+      justifyContent: "flex-end",
+      marginTop: 10,
+    },
+    actionbtns: {
+      flexDirection: "row",
+      justifyContent: "center",
+      gap: 12,
+      marginTop: 10,
+    },
+    actionbtn: {
+      backgroundColor: isDark ? "#1e293b" : "#e5e7eb",
+      padding: 10,
+      borderRadius: 12,
+      justifyContent: "center",
+      alignItems: "center",
+      shadowColor: "#000",
+      shadowOpacity: 0.05,
+      shadowRadius: 4,
+      shadowOffset: { width: 0, height: 2 },
+      elevation: 3,
+    },
+  });
+
+export default loanStyles;

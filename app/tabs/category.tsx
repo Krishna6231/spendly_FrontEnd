@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -9,8 +9,10 @@ import {
   TextInput,
   Alert,
   Pressable,
+  ScrollView,
 } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -30,6 +32,8 @@ import { RootState, AppDispatch } from "@/redux/store";
 import { useRouter } from "expo-router";
 import { useTheme } from "@/context/ThemeContext";
 import categoryStyles from "@/styles/category.styles";
+import LoanScreen from "@/components/LoanScreen";
+import { addLentBorrowAsync, fetchAllLentBorrowAsync, updateLentBorrowAsync } from "@/redux/slices/lentborrowSlice";
 
 const { width } = Dimensions.get("window");
 
@@ -47,20 +51,22 @@ const CATEGORY_COLORS = [
   "#F44336",
 ];
 
-interface CategoryItem {
-  category: string;
-  limit: number;
-  color: string;
-}
-
-interface SubscriptionItem {
-  subscription: string;
-  amount: number;
-  autopay_date: number;
-}
-
 const tabs = ["Categories", "Subscriptions", "Loans"] as const;
 type TabType = (typeof tabs)[number];
+
+type Installment = {
+  amount: number;
+  date: string;
+};
+
+type Loan = {
+  id: string;
+  amount: number;
+  name: string;
+  type: "Lent" | "Borrow";
+  date: string;
+  installments: Installment[];
+};
 
 const TopTabs = () => {
   const [activeTab, setActiveTab] = useState<TabType>("Categories");
@@ -68,6 +74,7 @@ const TopTabs = () => {
   const underlineOffset = useSharedValue(0);
   const [modalVisible, setModalVisible] = useState(false);
   const [submodalVisible, setSubModalVisible] = useState(false);
+  const [loanModalVisible, setLoanModalVisible] = useState(false);
   const [editingSub, setEditingSub] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [subNameInput, setSubNameInput] = useState("");
@@ -76,47 +83,37 @@ const TopTabs = () => {
   const [limitInput, setLimitInput] = useState("");
   const [nameInput, setNameInput] = useState("");
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
+  const [editingLoan, setEditingLoan] = useState<string | null>(null);
   const [aselectedColor, setASelectedColor] = useState<string>("");
+  const [lname, setLname] = useState("");
+  const [loanAmount, setLoanAmount] = useState("");
+  const [loantype, setLoanType] = useState<"Lent" | "Borrow">("Lent");
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [date, setDate] = useState(new Date());
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const expenses = useSelector((state: RootState) => state.expenses.expenses);
   const categoryList = useSelector(
     (state: RootState) => state.expenses.categories
-  ) as CategoryItem[];
+  );
   const subscriptionList = useSelector(
     (state: RootState) => state.expenses.subscriptions
-  ) as SubscriptionItem[];
-  const [loanList, setLoanList] = useState([
-    {
-      name: "Rahul Sharma",
-      amount: 2000,
-      type: "borrow", // or "lend"
-      dueDate: "2025-06-15",
-    },
-    {
-      name: "Ananya Singh",
-      amount: 3500,
-      type: "lend",
-      dueDate: "2025-06-25",
-    },
-    {
-      name: "Zomato Refund",
-      amount: 450,
-      type: "borrow",
-      dueDate: "2025-06-10",
-    },
-  ]);
+  );
+  const loanList = useSelector(
+    (state: RootState) => state.lentBorrow.data
+  );
+  
+useEffect(() => {
+  dispatch(fetchAllLentBorrowAsync());
+}, []);
+  
 
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const styles = categoryStyles(isDark);
-
+  const[id,setId]=useState("");
   const handleSave = async () => {
-    if (
-      !nameInput ||
-      !limitInput ||
-      !selectedColor
-    ) {
+    if (!nameInput || !limitInput || !selectedColor) {
       Alert.alert(
         "Missing Fields",
         "Please fill in all fields including color."
@@ -160,11 +157,7 @@ const TopTabs = () => {
   };
 
   const handleSubSave = async () => {
-    if (
-      !subNameInput ||
-      !subAmount ||
-      !selectedDate
-    ) {
+    if (!subNameInput || !subAmount || !selectedDate) {
       Alert.alert("Missing Fields", "Please fill in all fields.");
       return;
     }
@@ -208,6 +201,55 @@ const TopTabs = () => {
       `${subNameInput} - ${subAmount} - ${selectedDate}`
     );
   };
+const handleLoanSave = async () => {
+    if (!lname || !loanAmount || !date) {
+      Alert.alert("Missing Fields", "Please fill in all fields.");
+      return;
+    }
+
+    const payload = {
+      id: id,
+      name: lname,
+      amount: parseFloat(loanAmount),
+      date: date,
+      type: loantype
+    };
+
+    try {
+      let action;
+      if (editingLoan) {
+        action = await dispatch(updateLentBorrowAsync(payload));
+      } else {
+        action = await dispatch(addLentBorrowAsync(payload));
+      }
+
+      const isSuccess = editingLoan
+        ? updateLentBorrowAsync.fulfilled.match(action)
+        : addLentBorrowAsync.fulfilled.match(action);
+
+      if (isSuccess) {
+        setEditingLoan(null);
+        setLname("");
+        setLoanAmount("");
+        setDate(new Date());
+        setLoanModalVisible(false);
+        setLoanType("Lent");
+        await dispatch(fetchAllLentBorrowAsync());
+      } else {
+        Alert.alert("Error", "Failed to save loan.");
+        console.error("Loan operation failed:", action.payload);
+      }
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      Alert.alert("Error", "Something went wrong.");
+    }
+
+    Alert.alert(
+      "Loan Saved"
+    );
+  };
+  
+
 
   const handleTabPress = (tab: TabType) => {
     const index = tabs.indexOf(tab);
@@ -309,7 +351,7 @@ const TopTabs = () => {
     setSubModalVisible(true);
   };
 
-  const openSubEditModal = (item: SubscriptionItem) => {
+  const openSubEditModal = (item: any) => {
     setEditingSub(item.subscription);
     setSubNameInput(item.subscription);
     setSubAmount(item.amount.toString());
@@ -325,7 +367,7 @@ const TopTabs = () => {
     setModalVisible(true);
   };
 
-  const openEditModal = (item: CategoryItem) => {
+  const openEditModal = (item: any) => {
     setEditingCategory(item.category);
     setNameInput(item.category);
     setLimitInput(item.limit.toString());
@@ -335,7 +377,20 @@ const TopTabs = () => {
   };
 
   const openLoanAddModal = () => {
-    console.log("Loan Add Modal");
+    setLname("");
+    setLoanAmount("");
+    setLoanType("Lent");
+    setDate(new Date());
+    setLoanModalVisible(true);
+  };
+
+  const openLoanEditModal = (item: any) => {
+    setId(item.id);
+    setEditingLoan(item);
+    setLname(item.name);
+    setLoanAmount(item.amount);
+    setDate(new Date(item.date));
+    setLoanModalVisible(true);
   };
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -600,34 +655,85 @@ const TopTabs = () => {
             </Modal>
           </View>
           <View style={styles.screen}>
-            {loanList.length === 0 ? (
-              <Text style={styles.emptyText}>No Loans Yet</Text>
-            ) : (
-              loanList.map((loan, index) => (
-                <View key={index} style={styles.loanItem}>
-                  <View>
-                    <Text style={styles.loanName}>
-                      <Text style={styles.italicLabel}>
-                        {loan.type === "borrow" ? "From " : "To "}
-                      </Text>
-                      {loan.name}
+            <LoanScreen loanList={loanList} openLoanEditModal = {openLoanEditModal} />
+            <Modal
+              transparent={true}
+              visible={loanModalVisible}
+              animationType="fade"
+              onRequestClose={() => setLoanModalVisible(false)}
+            >
+              <Pressable
+                style={styles.modalOverlay}
+                onPress={() => setLoanModalVisible(false)}
+              >
+                <View style={styles.modalContent2}>
+                  <Text style={styles.modalTitle}>{editingLoan ? "Editing loan" : "Add loan"}</Text>
+                  <TextInput
+                    value={lname}
+                    onChangeText={setLname}
+                    placeholder="Person Name"
+                    placeholderTextColor={isDark ? "#9ca3af" : "#888"}
+                    style={styles.input}
+                  />
+                  <TextInput
+                    value={loanAmount}
+                    onChangeText={setLoanAmount}
+                    placeholder="Amount"
+                    placeholderTextColor={isDark ? "#9ca3af" : "#888"}
+                    keyboardType="numeric"
+                    style={styles.input}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowDatePicker(true)}
+                    style={styles.input}
+                  >
+                    <Text style={styles.dateInput}>
+                      {date.toLocaleDateString()}
                     </Text>
-                    <Text style={styles.loanDetails}>
-                      {loan.type === "borrow" ? "Borrowed" : "Lent"} ₹
-                      {loan.amount} | Due: {loan.dueDate}
-                    </Text>
+                  </TouchableOpacity>
+
+                  {showDatePicker && (
+                    <DateTimePicker
+                      value={date}
+                      mode="date"
+                      display="default"
+                      themeVariant={isDark ? "dark" : "light"}
+                      onChange={(event, selectedDate) => {
+                        const currentDate = selectedDate || date;
+                        setDate(currentDate);
+                        setShowDatePicker(false);
+                      }}
+                      maximumDate={new Date()}
+                    />
+                  )}
+
+                  <View style={styles.radioGroup}>
+                    {["Lent", "Borrow"].map((type) => (
+                      <TouchableOpacity
+                        key={type}
+                        style={styles.radioOption}
+                        onPress={() => setLoanType(type as "Lent" | "Borrow")}
+                        disabled={editingLoan? true : false }
+                      >
+                        <View style={styles.radioCircle}>
+                          {loantype === type && (
+                            <View style={styles.radioSelected} />
+                          )}
+                        </View>
+                        <Text style={styles.radioLabel}>{type}</Text>
+                      </TouchableOpacity>
+                    ))}
                   </View>
-                  <View style={styles.iconRow}>
-                    <TouchableOpacity>
-                      <MaterialIcons name="edit" size={22} color="#555" />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={{ marginLeft: 16 }}>
-                      <MaterialIcons name="delete" size={22} color="#555" />
-                    </TouchableOpacity>
-                  </View>
+
+                  <TouchableOpacity
+                    style={styles.okBtn}
+                    onPress={handleLoanSave}
+                  >
+                    <Text style={styles.okBtnText}>OK</Text>
+                  </TouchableOpacity>
                 </View>
-              ))
-            )}
+              </Pressable>
+            </Modal>
           </View>
         </Animated.View>
       </View>

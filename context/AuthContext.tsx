@@ -50,7 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (storedRefreshToken) {
         const response = await axios.post(
-          "https://api.moneynut.co.in/auth/refresh",
+          "http://192.168.1.4:3000/auth/refresh",
           { refreshToken: storedRefreshToken }
         );
 
